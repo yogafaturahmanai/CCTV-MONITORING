@@ -14,7 +14,7 @@ export default function App() {
   const [nvrs, setNvrs] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'audit'
-  
+
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSite, setSelectedSite] = useState('All Sites');
@@ -227,9 +227,9 @@ export default function App() {
     }
 
     // Duplicate local check (backend will also validate)
-    const isDuplicate = nvrs.some(n => 
-      n.ip_address === nvrFormIp && 
-      n.port === portNum && 
+    const isDuplicate = nvrs.some(n =>
+      n.ip_address === nvrFormIp &&
+      n.port === portNum &&
       (!editingNvr || editingNvr.id !== n.id)
     );
 
@@ -336,7 +336,7 @@ export default function App() {
 
   // Derived states / Analytics calculations
   const totalNvrs = nvrs.length;
-  
+
   // Channels metrics (computed from NVR relationships)
   let totalChannels = 0;
   let onlineCameras = 0;
@@ -389,8 +389,8 @@ export default function App() {
 
   // Filtered NVR list
   const filteredNvrs = nvrs.filter(nvr => {
-    const matchesSearch = nvr.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          nvr.ip_address.includes(searchQuery);
+    const matchesSearch = nvr.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      nvr.ip_address.includes(searchQuery);
     const matchesSite = selectedSite === 'All Sites' || nvr.site === selectedSite;
     const matchesType = selectedType === 'All Types' || nvr.type === selectedType;
     return matchesSearch && matchesSite && matchesType;
@@ -409,7 +409,7 @@ export default function App() {
             <h1>ATI CCTV MONITORING</h1>
           </div>
           <p className="login-subtitle">IT Infrastructure Single Pane of Glass NVR Status</p>
-          
+
           <form onSubmit={handleLogin}>
             <div className="form-group" style={{ textAlign: 'left' }}>
               <label className="form-label">Username</label>
@@ -422,7 +422,7 @@ export default function App() {
                 disabled={lockoutTime !== null}
               />
             </div>
-            
+
             <div className="form-group" style={{ textAlign: 'left' }}>
               <label className="form-label">Password</label>
               <input
@@ -450,7 +450,7 @@ export default function App() {
               Masuk Dashboard
             </button>
           </form>
-          
+
           <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
             Gunakan username: <strong style={{ color: 'var(--text-secondary)' }}>admin</strong> & password: <strong style={{ color: 'var(--text-secondary)' }}>admin123</strong>
           </div>
@@ -472,13 +472,13 @@ export default function App() {
         </div>
 
         <div className="header-actions">
-          <button 
+          <button
             className={`btn ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setActiveTab('dashboard')}
           >
             Dashboard
           </button>
-          <button 
+          <button
             className={`btn ${activeTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setActiveTab('audit')}
           >
@@ -620,7 +620,7 @@ export default function App() {
                       <span>IP Address</span>
                       <strong style={{ color: 'var(--text-primary)' }}>{nvr.ip_address}:{nvr.port}</strong>
                     </div>
-                    
+
                     <div className="nvr-meta-row">
                       <span>Protocol</span>
                       <span style={{ textTransform: 'uppercase' }}>{nvr.protocol}</span>
@@ -660,8 +660,8 @@ export default function App() {
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                    <button 
-                      className="btn btn-secondary" 
+                    <button
+                      className="btn btn-secondary"
                       style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem' }}
                       onClick={() => {
                         setSelectedNvrId(nvr.id);
@@ -671,8 +671,8 @@ export default function App() {
                     >
                       🔍 Detail View
                     </button>
-                    <button 
-                      className="btn btn-secondary" 
+                    <button
+                      className="btn btn-secondary"
                       style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
                       onClick={() => openEditNvrModal(nvr)}
                     >
@@ -750,13 +750,13 @@ export default function App() {
 
             <div className="modal-body">
               <div className="modal-tabs">
-                <button 
+                <button
                   className={`tab-btn ${detailTab === 'cameras' ? 'active' : ''}`}
                   onClick={() => setDetailTab('cameras')}
                 >
                   🎥 Status Kamera & Recording ({selectedNvrChannels.length})
                 </button>
-                <button 
+                <button
                   className={`tab-btn ${detailTab === 'hdd' ? 'active' : ''}`}
                   onClick={() => setDetailTab('hdd')}
                 >
@@ -856,14 +856,14 @@ export default function App() {
 
             <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
               <div>
-                <button 
-                  className="btn btn-danger" 
+                <button
+                  className="btn btn-danger"
                   onClick={() => handleDeleteNvr(selectedNvr.id)}
                 >
                   🗑️ Hapus NVR
                 </button>
                 {selectedNvr.type === 'pcnvr' && (
-                  <button 
+                  <button
                     className="btn btn-secondary"
                     style={{ marginLeft: '0.5rem', color: 'var(--accent-cyan)' }}
                     onClick={() => handleRegenerateToken(selectedNvr.id)}
@@ -872,10 +872,10 @@ export default function App() {
                   </button>
                 )}
               </div>
-              
+
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  className="btn btn-secondary" 
+                <button
+                  className="btn btn-secondary"
                   onClick={() => handleManualRefreshNvr(selectedNvr.id)}
                   disabled={isPollingActive}
                 >
@@ -910,7 +910,7 @@ export default function App() {
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="e.g. NVR Site Cikupa Logistics"
+                    placeholder="e.g. NVR Site"
                     value={nvrFormName}
                     onChange={(e) => setNvrFormName(e.target.value)}
                     required
@@ -925,10 +925,10 @@ export default function App() {
                       value={nvrFormSite}
                       onChange={(e) => setNvrFormSite(e.target.value)}
                     >
-                      <option value="Head Office">Head Office</option>
-                      <option value="Cikupa Site">Cikupa Site</option>
-                      <option value="Cakung Site">Cakung Site</option>
-                      <option value="Surabaya Site">Surabaya Site</option>
+                      <option value="Jakarta CBD">Jakarta CBD</option>
+                      <option value="BSD North Point 36">BSD North Point 36</option>
+                      <option value="BSD North Point 67">BSD North Point 67</option>
+                      <option value="Padel E-Building">Padel E-Building</option>
                     </select>
                   </div>
 
@@ -1039,11 +1039,11 @@ export default function App() {
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Berikut adalah token autentikasi agent untuk <strong>{tokenModalNvr.name}</strong>. Salin token ini ke config file agent PC Anda.
               </p>
-              
+
               <div className="agent-token-box">
                 <span>{tokenModalNvr.agent_token}</span>
-                <button 
-                  className="copy-btn" 
+                <button
+                  className="copy-btn"
                   onClick={() => {
                     navigator.clipboard.writeText(tokenModalNvr.agent_token);
                     alert('Token disalin ke clipboard!');
