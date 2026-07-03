@@ -845,9 +845,9 @@ export default function App() {
                         return (
                           <tr key={hdd.id}>
                             <td><strong>Disk {hdd.disk_id}</strong></td>
-                            <td>{(hdd.capacity_mb / 1000000).toFixed(1)} TB</td>
-                            <td>{(usedMb / 1000000).toFixed(1)} TB ({usagePct}%)</td>
-                            <td>{(hdd.freespace_mb / 1000000).toFixed(1)} TB</td>
+                            <td>{(hdd.capacity_mb / 1024).toFixed(1)} GB</td>
+                            <td>{(usedMb / 1024).toFixed(1)} GB ({usagePct}%)</td>
+                            <td>{(hdd.freespace_mb / 1024).toFixed(1)} GB</td>
                             <td>
                               <span className={`indicator-dot ${hddStatusClass}`}></span>
                               <span style={{ textTransform: 'capitalize' }}>{hdd.status}</span>
