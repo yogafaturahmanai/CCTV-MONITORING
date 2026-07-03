@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  cctv-dashboard:
+    build: .
+    container_name: cctv-monitoring-dashboard
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/data/production.db
+      - JWT_SECRET=ati_cctv_monitoring_secret_key
+      - NODE_ENV=production
+    volumes:
+      - cctv-db-data:/app/prisma/data
+    restart: always
+
+volumes:
+  cctv-db-data:

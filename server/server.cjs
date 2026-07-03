@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const routes = require('./routes.cjs');
 const { pollNvrDevice } = require('./isapiClient.cjs');
 
+const path = require('path');
 const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,6 +14,14 @@ app.use(express.json());
 
 // API base routing
 app.use('/api', routes);
+
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
 
 // background scheduler for NVR polling & heartbeat checks
 const runNvrScheduler = async () => {
