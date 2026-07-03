@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model NVR {
+  id                 String    @id @default(uuid())
+  name               String
+  site               String
+  type               String    // "hardware_nvr" or "pcnvr"
+  ip_address         String
+  port               Int
+  protocol           String    // "http" or "https"
+  username           String
+  password_encrypted String
+  agent_token        String?   @unique
+  rotated_at         DateTime?
+  last_heartbeat_at  DateTime?
+  is_active          Boolean   @default(true)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  channels           Channel[]
+  hdds               HDD[]
+}
+
+model Channel {
+  id                    String   @id @default(uuid())
+  nvr_id                String
+  channel_no            Int
+  camera_name           String
+  last_status           String   // ONLINE, OFFLINE, VIDEO_LOSS, NETWORK_TIMEOUT, AUTH_FAILED, UNKNOWN
+  last_recording_status String   // RECORDING, NO_RECORDING, DISK_FULL, HDD_ERROR, UNKNOWN
+  last_checked_at       DateTime @default(now())
+
+  nvr                   NVR      @relation(fields: [nvr_id], references: [id], onDelete: Cascade)
+}
+
+model HDD {
+  id              String   @id @default(uuid())
+  nvr_id          String
+  disk_id         String
+  capacity_mb     Float
+  freespace_mb    Float
+  status          String   // "normal", "error", "uninitialized"
+  last_checked_at DateTime @default(now())
+
+  nvr             NVR      @relation(fields: [nvr_id], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  username  String
+  action    String
+  details   String
+  severity  String   // "Info", "Warning", "Critical"
+}
