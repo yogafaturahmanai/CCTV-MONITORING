@@ -67,7 +67,7 @@ def get_hdds():
                 "disk_id": p.device, # e.g. "C:\"
                 "capacity_mb": usage.total / (1024 * 1024),
                 "freespace_mb": usage.free / (1024 * 1024),
-                "status": "error" if usage.percent > 95 else "normal" # Error jika disk 95% penuh
+                "status": "normal"
             })
         except Exception:
             continue
