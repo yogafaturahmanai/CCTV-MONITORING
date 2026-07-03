@@ -981,33 +981,35 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="form-row-2">
-                  <div className="form-group">
-                    <label className="form-label">Username</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="admin"
-                      value={nvrFormUsername}
-                      onChange={(e) => setNvrFormUsername(e.target.value)}
-                      required
-                    />
-                  </div>
+                {nvrFormType === 'hardware_nvr' && (
+                  <div className="form-row-2">
+                    <div className="form-group">
+                      <label className="form-label">Username</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="admin"
+                        value={nvrFormUsername}
+                        onChange={(e) => setNvrFormUsername(e.target.value)}
+                        required={nvrFormType === 'hardware_nvr'}
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label">
-                      {editingNvr ? 'Ganti Password Baru (Opsional)' : 'Password Device'}
-                    </label>
-                    <input
-                      type="password"
-                      className="form-input"
-                      placeholder={editingNvr ? 'Biarkan kosong jika tidak diubah' : '••••••••'}
-                      value={nvrFormPassword}
-                      onChange={(e) => setNvrFormPassword(e.target.value)}
-                      required={!editingNvr}
-                    />
+                    <div className="form-group">
+                      <label className="form-label">
+                        {editingNvr ? 'Ganti Password Baru (Opsional)' : 'Password Device'}
+                      </label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder={editingNvr ? 'Biarkan kosong jika tidak diubah' : '••••••••'}
+                        value={nvrFormPassword}
+                        onChange={(e) => setNvrFormPassword(e.target.value)}
+                        required={!editingNvr && nvrFormType === 'hardware_nvr'}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {nvrFormType === 'pcnvr' && (
                   <div style={{ background: 'rgba(0, 242, 254, 0.05)', border: '1px solid rgba(0, 242, 254, 0.2)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
