@@ -744,6 +744,20 @@ export default function App() {
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                   {selectedNvr.ip_address}:{selectedNvr.port} &bull; {selectedNvr.site} &bull; {selectedNvr.type === 'pcnvr' ? 'PCNVR Agent Model' : 'ISAPI Polling Model'}
                 </p>
+                {selectedNvr.type === 'pcnvr' && (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.5rem', borderRadius: '4px', width: 'fit-content' }}>
+                    <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>NVR ID: {selectedNvr.id}</span>
+                    <button 
+                      style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '3px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.7rem', padding: '2px 6px' }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedNvr.id);
+                        alert('NVR ID disalin ke clipboard!');
+                      }}
+                    >
+                      📋 Copy ID
+                    </button>
+                  </div>
+                )}
               </div>
               <button className="modal-close" onClick={() => setIsDetailModalOpen(false)}>&times;</button>
             </div>
@@ -1038,22 +1052,40 @@ export default function App() {
               <button className="modal-close" onClick={() => setIsTokenModalOpen(false)}>&times;</button>
             </div>
             <div className="modal-body">
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                Berikut adalah token autentikasi agent untuk <strong>{tokenModalNvr.name}</strong>. Salin token ini ke config file agent PC Anda.
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+                Berikut adalah detail autentikasi agent untuk <strong>{tokenModalNvr.name}</strong>. Salin informasi ini ke file `agent.py` di PC Anda.
               </p>
 
-              <div className="agent-token-box">
-                <span>{tokenModalNvr.agent_token}</span>
-                <button
-                  className="copy-btn"
-                  onClick={() => {
-                    navigator.clipboard.writeText(tokenModalNvr.agent_token);
-                    alert('Token disalin ke clipboard!');
-                  }}
-                  title="Salin Token"
-                >
-                  📋 Copy
-                </button>
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>NVR ID</label>
+                <div className="agent-token-box">
+                  <span style={{ fontFamily: 'monospace' }}>{tokenModalNvr.id}</span>
+                  <button
+                    className="copy-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(tokenModalNvr.id);
+                      alert('NVR ID disalin ke clipboard!');
+                    }}
+                  >
+                    📋 Copy ID
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'block' }}>Agent Token</label>
+                <div className="agent-token-box">
+                  <span style={{ wordBreak: 'break-all' }}>{tokenModalNvr.agent_token}</span>
+                  <button
+                    className="copy-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(tokenModalNvr.agent_token);
+                      alert('Agent Token disalin ke clipboard!');
+                    }}
+                  >
+                    📋 Copy Token
+                  </button>
+                </div>
               </div>
 
               <div style={{ marginTop: '1.25rem', background: 'var(--accent-amber-glow)', color: 'var(--accent-amber)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem' }}>
