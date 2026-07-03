@@ -123,8 +123,9 @@ const pollNvrDevice = async (nvr, decryptedPassword) => {
     // 3. Fetch Storage HDD Status
     let hdds = [];
     try {
+      // The standard endpoint for HDD info in Hikvision ISAPI is /ISAPI/ContentMgmt/Storage/hdd
       const hddRes = await makeDigestRequest(
-        `${baseURL}/ISAPI/System/Storage/volumes`,
+        `${baseURL}/ISAPI/ContentMgmt/Storage/hdd`,
         'GET',
         nvr.username,
         decryptedPassword,
@@ -166,7 +167,8 @@ const pollNvrDevice = async (nvr, decryptedPassword) => {
 const mapIsapiChannels = (xmlData) => {
   if (!xmlData) return [];
   
-  const list = xmlData.InputProxyChannelStatusList?.InputProxyChannelStatus;
+  // Handle different potential casings
+  const list = xmlData.InputProxyChannelStatusList?.InputProxyChannelStatus || xmlData.inputProxyChannelStatusList?.inputProxyChannelStatus;
   if (!list) return [];
 
   const rawChannels = Array.isArray(list) ? list : [list];
@@ -187,18 +189,28 @@ const mapIsapiChannels = (xmlData) => {
 const mapIsapiHdds = (xmlData) => {
   if (!xmlData) return [];
 
-  const list = xmlData.HDDList?.HDD;
+  // Handle different Hikvision XML casings (HDDList vs hddList)
+  const list = xmlData.HDDList?.HDD || xmlData.hddList?.hdd || xmlData.hddList?.HDD;
   if (!list) return [];
 
   const rawHdds = Array.isArray(list) ? list : [list];
   return rawHdds.map(h => {
-    // Hikvision fields: id, capacity (KB), freeSpace (KB), status ("normal", "error", etc.)
-    const capacityMb = Math.round((parseInt(h.capacity) || 0) / 1024);
-    const freeSpaceMb = Math.round((parseInt(h.freeSpace) || 0) / 1024);
+    // Hikvision fields: id, capacity (MB or KB depending on firmware), freeSpace
+    // Let's assume standard ISAPI returns MB. If it's unusually large, it might be KB or Bytes.
+    // Modern Hikvision often returns capacity in MB.
+    let capacityMb = parseInt(h.capacity) || 0;
+    let freeSpaceMb = parseInt(h.freeSpace) || 0;
     
+    // If capacity is insanely large (e.g., > 100,000,000), it's probably bytes or KB, but usually it's MB.
+    if (capacityMb > 10000000) {
+        // Fallback to KB to MB conversion just in case
+        capacityMb = Math.round(capacityMb / 1024);
+        freeSpaceMb = Math.round(freeSpaceMb / 1024);
+    }
+
     let dbStatus = 'normal';
     if (h.status === 'uninitialized') dbStatus = 'uninitialized';
-    else if (h.status !== 'normal' && h.status !== 'ok') dbStatus = 'error';
+    else if (h.status !== 'normal' && h.status !== 'ok' && h.status !== 'OK') dbStatus = 'error';
 
     return {
       disk_id: h.id || "1",
