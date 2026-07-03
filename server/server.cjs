@@ -34,33 +34,51 @@ const runNvrScheduler = async () => {
       if (nvr.type === 'hardware_nvr') {
         const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
         
-        if (result.channels && result.channels.length > 0) {
-          await prisma.channel.deleteMany({ where: { nvr_id: nvr.id } });
-          await prisma.channel.createMany({
-            data: result.channels.map(c => ({
-              nvr_id: nvr.id,
-              channel_no: c.channel_no,
-              camera_name: c.camera_name,
-              last_status: c.last_status,
-              last_recording_status: c.last_recording_status
-            }))
+        if (result.status === 'AUTH_FAILED' || result.status === 'NETWORK_TIMEOUT') {
+          await prisma.channel.updateMany({
+            where: { nvr_id: nvr.id },
+            data: {
+              last_status: result.status,
+              last_recording_status: 'UNKNOWN',
+              last_checked_at: new Date()
+            }
           });
+          await prisma.hDD.updateMany({
+            where: { nvr_id: nvr.id },
+            data: {
+              status: 'error',
+              last_checked_at: new Date()
+            }
+          });
+        } else {
+          if (result.channels && result.channels.length > 0) {
+            await prisma.channel.deleteMany({ where: { nvr_id: nvr.id } });
+            await prisma.channel.createMany({
+              data: result.channels.map(c => ({
+                nvr_id: nvr.id,
+                channel_no: c.channel_no,
+                camera_name: c.camera_name,
+                last_status: c.last_status,
+                last_recording_status: c.last_recording_status
+              }))
+            });
+          }
+
+          if (result.hdds && result.hdds.length > 0) {
+            await prisma.hDD.deleteMany({ where: { nvr_id: nvr.id } });
+            await prisma.hDD.createMany({
+              data: result.hdds.map(h => ({
+                nvr_id: nvr.id,
+                disk_id: h.disk_id,
+                capacity_mb: h.capacity_mb,
+                freespace_mb: h.freespace_mb,
+                status: h.status
+              }))
+            });
+          }
         }
 
-        if (result.hdds && result.hdds.length > 0) {
-          await prisma.hDD.deleteMany({ where: { nvr_id: nvr.id } });
-          await prisma.hDD.createMany({
-            data: result.hdds.map(h => ({
-              nvr_id: nvr.id,
-              disk_id: h.disk_id,
-              capacity_mb: h.capacity_mb,
-              freespace_mb: h.freespace_mb,
-              status: h.status
-            }))
-          });
-        }
-
-        console.log(`[Scheduler] Polled NVR ${nvr.name} successfully. Status: ${result.status}`);
+        console.log(`[Scheduler] Polled NVR ${nvr.name} completed. Status: ${result.status}`);
       } else if (nvr.type === 'pcnvr') {
         if (nvr.last_heartbeat_at) {
           const lastHeartbeat = new Date(nvr.last_heartbeat_at);

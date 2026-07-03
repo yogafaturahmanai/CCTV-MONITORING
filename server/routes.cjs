@@ -291,33 +291,51 @@ router.post('/nvr/:id/poll', authenticateToken, async (req, res) => {
 
     const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
 
-    if (result.channels && result.channels.length > 0) {
-      await prisma.channel.deleteMany({ where: { nvr_id: id } });
-      await prisma.channel.createMany({
-        data: result.channels.map(c => ({
-          nvr_id: id,
-          channel_no: c.channel_no,
-          camera_name: c.camera_name,
-          last_status: c.last_status,
-          last_recording_status: c.last_recording_status
-        }))
+    if (result.status === 'AUTH_FAILED' || result.status === 'NETWORK_TIMEOUT') {
+      await prisma.channel.updateMany({
+        where: { nvr_id: id },
+        data: {
+          last_status: result.status,
+          last_recording_status: 'UNKNOWN',
+          last_checked_at: new Date()
+        }
       });
+      await prisma.hDD.updateMany({
+        where: { nvr_id: id },
+        data: {
+          status: 'error',
+          last_checked_at: new Date()
+        }
+      });
+    } else {
+      if (result.channels && result.channels.length > 0) {
+        await prisma.channel.deleteMany({ where: { nvr_id: id } });
+        await prisma.channel.createMany({
+          data: result.channels.map(c => ({
+            nvr_id: id,
+            channel_no: c.channel_no,
+            camera_name: c.camera_name,
+            last_status: c.last_status,
+            last_recording_status: c.last_recording_status
+          }))
+        });
+      }
+
+      if (result.hdds && result.hdds.length > 0) {
+        await prisma.hDD.deleteMany({ where: { nvr_id: id } });
+        await prisma.hDD.createMany({
+          data: result.hdds.map(h => ({
+            nvr_id: id,
+            disk_id: h.disk_id,
+            capacity_mb: h.capacity_mb,
+            freespace_mb: h.freespace_mb,
+            status: h.status
+          }))
+        });
+      }
     }
 
-    if (result.hdds && result.hdds.length > 0) {
-      await prisma.hDD.deleteMany({ where: { nvr_id: id } });
-      await prisma.hDD.createMany({
-        data: result.hdds.map(h => ({
-          nvr_id: id,
-          disk_id: h.disk_id,
-          capacity_mb: h.capacity_mb,
-          freespace_mb: h.freespace_mb,
-          status: h.status
-        }))
-      });
-    }
-
-    res.json({ success: true });
+    res.json({ success: true, status: result.status });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
