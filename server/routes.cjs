@@ -163,27 +163,6 @@ router.post('/nvr', authenticateToken, async (req, res) => {
       }
     });
 
-    // Seed default mock channels and HDD to have data initially
-    await prisma.channel.create({
-      data: {
-        nvr_id: newNvr.id,
-        channel_no: 1,
-        camera_name: 'Default Channel 1',
-        last_status: 'ONLINE',
-        last_recording_status: 'RECORDING'
-      }
-    });
-
-    await prisma.hDD.create({
-      data: {
-        nvr_id: newNvr.id,
-        disk_id: type === 'pcnvr' ? 'D:/' : '1',
-        capacity_mb: 2000000,
-        freespace_mb: 1800000,
-        status: 'normal'
-      }
-    });
-
     await logAudit(req.user.username, 'Tambah NVR', `Menambahkan NVR: ${name} (${ip_address})`, 'Info');
 
     res.status(201).json(newNvr);
