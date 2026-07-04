@@ -36,6 +36,7 @@ const sendTelegramMessage = (text, targetChatId = CHAT_ID) => {
       hostname: 'api.telegram.org',
       path: `/bot${BOT_TOKEN}/sendMessage`,
       method: 'POST',
+      rejectUnauthorized: false, // Bypass SSL verification issues due to corporate network/proxy interception
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body)
@@ -296,6 +297,7 @@ const runTelegramBotListener = async () => {
     hostname: 'api.telegram.org',
     path: `/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`,
     method: 'GET',
+    rejectUnauthorized: false, // Bypass SSL verification issues due to corporate network/proxy interception
     timeout: 35000 // sedikit lebih besar dari timeout API telegram
   };
 
