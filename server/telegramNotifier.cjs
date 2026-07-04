@@ -18,15 +18,15 @@ const CHAT_ID   = process.env.TELEGRAM_CHAT_ID   || '-1004330317354';
 // ─────────────────────────────────────────────
 // Helper: Kirim pesan ke Telegram via Bot API
 // ─────────────────────────────────────────────
-const sendTelegramMessage = (text) => {
+const sendTelegramMessage = (text, targetChatId = CHAT_ID) => {
   return new Promise((resolve, reject) => {
-    if (!BOT_TOKEN || !CHAT_ID) {
-      console.warn('[Telegram] TELEGRAM_BOT_TOKEN atau TELEGRAM_CHAT_ID belum dikonfigurasi.');
+    if (!BOT_TOKEN || !targetChatId) {
+      console.warn('[Telegram] TELEGRAM_BOT_TOKEN atau targetChatId belum dikonfigurasi.');
       return resolve(false);
     }
 
     const body = JSON.stringify({
-      chat_id: CHAT_ID,
+      chat_id: targetChatId,
       text,
       parse_mode: 'Markdown',
       disable_web_page_preview: true
@@ -101,7 +101,7 @@ const sendAlert = async (severity, title, message) => {
 // ─────────────────────────────────────────────
 // Laporan Harian / Manual Report
 // ─────────────────────────────────────────────
-const sendDailyReport = async () => {
+const sendDailyReport = async (targetChatId = CHAT_ID) => {
   try {
     const nvrs = await prisma.nVR.findMany({
       where: { is_active: true },
@@ -249,7 +249,7 @@ const sendDailyReport = async () => {
 
     report += `\n_Laporan otomatis dari CCTV Monitoring Dashboard_`;
 
-    return sendTelegramMessage(report);
+    return sendTelegramMessage(report, targetChatId);
   } catch (err) {
     console.error('[Telegram Report Error]', err.message);
     return false;
@@ -269,8 +269,8 @@ const checkDailyReportSchedule = () => {
   const wibHour   = (now.getUTCHours() + 7) % 24;
   const wibMinute = now.getUTCMinutes();
 
-  // Kirim pada jam 08:00 dan 18:00 WIB (toleransi menit 0-1)
-  const isScheduledHour = (wibHour === 8 || wibHour === 18) && wibMinute === 0;
+  // Kirim pada jam 06:00, 15:00, dan 21:00 WIB (toleransi menit 0-1)
+  const isScheduledHour = (wibHour === 6 || wibHour === 15 || wibHour === 21) && wibMinute === 0;
 
   if (isScheduledHour && lastDailyReportHour !== wibHour) {
     lastDailyReportHour = wibHour;
@@ -283,6 +283,66 @@ const checkDailyReportSchedule = () => {
     lastDailyReportHour = -1;
   }
 };
+
+// ─────────────────────────────────────────────
+// Listener Pesan Masuk (Telegram Long Polling)
+// ─────────────────────────────────────────────
+let lastUpdateId = 0;
+
+const runTelegramBotListener = async () => {
+  if (!BOT_TOKEN) return;
+  
+  const options = {
+    hostname: 'api.telegram.org',
+    path: `/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`,
+    method: 'GET',
+    timeout: 35000 // sedikit lebih besar dari timeout API telegram
+  };
+
+  const req = https.get(options, (res) => {
+    let data = '';
+    res.on('data', chunk => { data += chunk; });
+    res.on('end', async () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.ok && json.result) {
+          for (const update of json.result) {
+            lastUpdateId = update.update_id;
+            
+            const message = update.message;
+            if (message && message.text) {
+              const text = message.text.trim().toLowerCase();
+              
+              // Menerima perintah: /report, report, /status, atau status
+              if (text === '/report' || text === 'report' || text === '/status' || text === 'status') {
+                console.log(`[Telegram Bot] Menerima request manual report dari Chat ID: ${message.chat.id}`);
+                await sendTelegramMessage("⏳ _Sedang memproses laporan status CCTV, mohon tunggu..._", message.chat.id);
+                await sendDailyReport(message.chat.id);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Abaikan parse error
+      }
+      // Poll lagi setelah 1 detik
+      setTimeout(runTelegramBotListener, 1000);
+    });
+  });
+
+  req.on('error', (e) => {
+    // Jika koneksi gagal, coba lagi dalam 5 detik
+    console.error('[Telegram Listener Error]', e.message);
+    setTimeout(runTelegramBotListener, 5000);
+  });
+  
+  req.on('timeout', () => {
+    req.destroy();
+  });
+};
+
+// Jalankan listener bot setelah server start 5 detik
+setTimeout(runTelegramBotListener, 5000);
 
 module.exports = {
   sendTelegramMessage,
