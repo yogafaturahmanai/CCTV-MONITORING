@@ -336,12 +336,12 @@ export default function App() {
     }
   };
 
-  // Telegram: Kirim laporan manual
-  const sendTelegramReport = async () => {
+  // Email: Kirim laporan manual
+  const sendEmailReport = async () => {
     setIsTelegramSending(true);
     setTelegramStatus(null);
     try {
-      const response = await fetch('/api/telegram/report', {
+      const response = await fetch('/api/email/report', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -358,12 +358,12 @@ export default function App() {
     }
   };
 
-  // Telegram: Test koneksi bot
-  const testTelegramBot = async () => {
+  // Email: Test koneksi SMTP
+  const testEmailSMTP = async () => {
     setIsTelegramSending(true);
     setTelegramStatus(null);
     try {
-      const response = await fetch('/api/telegram/test', {
+      const response = await fetch('/api/email/test', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -628,9 +628,9 @@ export default function App() {
               )}
               <button
                 className="btn"
-                onClick={testTelegramBot}
+                onClick={testEmailSMTP}
                 disabled={isTelegramSending}
-                title="Test koneksi bot Telegram"
+                title="Test koneksi email SMTP"
                 style={{
                   background: 'transparent',
                   border: '1px solid rgba(32,178,170,0.4)',
@@ -642,15 +642,15 @@ export default function App() {
                   opacity: isTelegramSending ? 0.6 : 1
                 }}
               >
-                {isTelegramSending ? '⏳' : '🤖'} Test Bot
+                {isTelegramSending ? '⏳' : '📧'} Test SMTP
               </button>
               <button
                 className="btn"
-                onClick={sendTelegramReport}
+                onClick={sendEmailReport}
                 disabled={isTelegramSending}
-                title="Kirim laporan status semua NVR ke Telegram sekarang"
+                title="Kirim laporan status semua NVR ke Email sekarang"
                 style={{
-                  background: 'linear-gradient(135deg, #0088cc, #006699)',
+                  background: 'linear-gradient(135deg, #0284c7, #2563eb)',
                   border: 'none',
                   color: '#fff',
                   fontSize: '0.8rem',
@@ -661,7 +661,7 @@ export default function App() {
                   fontWeight: 600
                 }}
               >
-                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Laporan'}
+                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
               </button>
               <button className="btn btn-primary" onClick={openAddNvrModal}>
                 <span>+</span> Register New NVR
