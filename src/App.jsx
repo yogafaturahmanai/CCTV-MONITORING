@@ -632,18 +632,33 @@ export default function App() {
                       </div>
                     )}
 
-                    {totalCapacity > 0 && (
-                      <div className="storage-section">
-                        <div className="storage-header">
-                          <span>Storage Used ({usagePercent}%)</span>
-                          <span>{((totalCapacity - totalFree) / 1000000).toFixed(1)} / {(totalCapacity / 1000000).toFixed(1)} TB</span>
-                        </div>
-                        <div className="progress-track">
-                          <div
-                            className={`progress-fill ${diskSeverity}`}
-                            style={{ width: `${usagePercent}%` }}
-                          ></div>
-                        </div>
+                    {nvrHdds.length > 0 && (
+                      <div className="storage-section" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.75rem' }}>
+                        {nvrHdds.map(hdd => {
+                          const hddUsedMb = hdd.capacity_mb - hdd.freespace_mb;
+                          const hddUsagePct = Math.round((hddUsedMb / hdd.capacity_mb) * 100);
+                          let hddSeverity = 'normal';
+                          if (hdd.status === 'error') {
+                            hddSeverity = 'error';
+                          } else if (hddUsagePct > 95) {
+                            hddSeverity = 'warning';
+                          }
+
+                          return (
+                            <div key={hdd.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <div className="storage-header" style={{ fontSize: '0.75rem', marginBottom: '2px' }}>
+                                <span>Disk {hdd.disk_id} ({hddUsagePct}%)</span>
+                                <span>{(hddUsedMb / 1024).toFixed(1)} / {(hdd.capacity_mb / 1024).toFixed(1)} GB</span>
+                              </div>
+                              <div className="progress-track" style={{ height: '6px' }}>
+                                <div
+                                  className={`progress-fill ${hddSeverity}`}
+                                  style={{ width: `${hddUsagePct}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
