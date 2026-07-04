@@ -512,8 +512,8 @@ export default function App() {
         <div className="logo-section">
           <span className="logo-icon">📹</span>
           <div>
-            <h1>ATI CCTV MONITORING</h1>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>SINGLE PANE OF GLASS</span>
+            <h1>Dashboard ATI CCTV MONITORING</h1>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Dashboard Monitoring CCTV All Site</span>
           </div>
         </div>
 
