@@ -23,6 +23,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+const lastPolledCache = {};
+
 // background scheduler for NVR polling & heartbeat checks
 const runNvrScheduler = async () => {
   console.log('[Scheduler] Running NVR periodic status check...');
@@ -32,6 +34,13 @@ const runNvrScheduler = async () => {
     
     for (const nvr of nvrs) {
       if (nvr.type === 'hardware_nvr') {
+        const now = Date.now();
+        const lastPolled = lastPolledCache[nvr.id] || 0;
+        if (now - lastPolled < 60000) {
+          continue; // Skip polling this hardware NVR if polled less than 60s ago
+        }
+        lastPolledCache[nvr.id] = now;
+
         const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
         
         if (result.status === 'AUTH_FAILED' || result.status === 'NETWORK_TIMEOUT') {
@@ -84,7 +93,7 @@ const runNvrScheduler = async () => {
           const lastHeartbeat = new Date(nvr.last_heartbeat_at);
           const diffSeconds = (new Date() - lastHeartbeat) / 1000;
           
-          if (diffSeconds > 120) {
+          if (diffSeconds > 40) {
             // Update database status of channels to show offline/timeout
             await prisma.channel.updateMany({
               where: { nvr_id: nvr.id },
@@ -108,7 +117,7 @@ const runNvrScheduler = async () => {
               data: {
                 username: 'system',
                 action: 'Agent Stale',
-                details: `Agent untuk PCNVR ${nvr.name} tidak heartbeat melebihi 120 detik.`,
+                details: `Agent untuk PCNVR ${nvr.name} tidak heartbeat melebihi 40 detik.`,
                 severity: 'Warning'
               }
             });
@@ -137,7 +146,7 @@ const decryptPassword = (encText) => {
 app.listen(PORT, async () => {
   console.log(`[Express Backend] Running on http://localhost:${PORT}`);
 
-  // Run first poll immediately, then schedule every 60 seconds
+  // Run first poll immediately, then schedule every 15 seconds
   setTimeout(runNvrScheduler, 5000);
-  setInterval(runNvrScheduler, 60000);
+  setInterval(runNvrScheduler, 15000);
 });

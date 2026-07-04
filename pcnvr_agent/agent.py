@@ -137,5 +137,5 @@ if __name__ == "__main__":
     
     while True:
         send_heartbeat()
-        # Kirim data setiap 1 menit (60 detik)
-        time.sleep(60)
+        # Kirim data setiap 15 detik untuk realtime update
+        time.sleep(15)
