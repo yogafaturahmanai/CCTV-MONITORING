@@ -194,12 +194,27 @@ def check_camera_recording(cam_ip):
 def get_hdds():
     """
     Membaca otomatis partisi harddisk di PC Windows beserta sisa kapasitasnya.
+    Hanya melaporkan drive yang digunakan untuk penyimpanan rekaman CCTV (ada di RECORDING_PATHS).
     """
     hdds = []
+    
+    # Ambil drive letter unik dari RECORDING_PATHS (misal: "D:", "E:")
+    valid_drives = set()
+    for path in RECORDING_PATHS:
+        drive = os.path.splitdrive(path)[0].upper()
+        if drive:
+            valid_drives.add(drive)
+
     partitions = psutil.disk_partitions(all=False)
     for p in partitions:
         if 'cdrom' in p.opts or p.fstype == '':
             continue
+            
+        # Dapatkan drive letter dari mountpoint (misal: "C:", "D:")
+        mount_drive = os.path.splitdrive(p.mountpoint)[0].upper()
+        if mount_drive not in valid_drives:
+            continue  # Lewati jika drive ini bukan tempat penyimpanan iVMS (seperti C:\)
+
         try:
             usage = psutil.disk_usage(p.mountpoint)
             hdds.append({
