@@ -3,7 +3,6 @@ const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const routes = require('./routes.cjs');
 const { pollNvrDevice } = require('./isapiClient.cjs');
-const { sendEmailAlert, checkDailyEmailReportSchedule } = require('./emailNotifier.cjs');
 
 const path = require('path');
 const prisma = new PrismaClient();
@@ -42,21 +41,9 @@ const runNvrScheduler = async () => {
         }
         lastPolledCache[nvr.id] = now;
 
-        // Get previous channel statuses before update (for diffing)
-        const prevChannels = await prisma.channel.findMany({ where: { nvr_id: nvr.id } });
-        const prevStatusMap = {};
-        prevChannels.forEach(c => { prevStatusMap[c.channel_no] = c.last_status; });
-
         const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
         
         if (result.status === 'AUTH_FAILED' || result.status === 'NETWORK_TIMEOUT') {
-          // Alert: NVR tidak bisa dihubungi
-          const prevNvrOnline = prevChannels.some(c => c.last_status === 'ONLINE');
-          if (prevNvrOnline) {
-            sendEmailAlert('critical', `NVR Tidak Dapat Dijangkau`,
-              `❌ *${nvr.name}* (${nvr.site}) — ${nvr.ip_address}:${nvr.port}\nStatus: \`${result.status}\``
-            );
-          }
           await prisma.channel.updateMany({
             where: { nvr_id: nvr.id },
             data: {
@@ -74,19 +61,6 @@ const runNvrScheduler = async () => {
           });
         } else {
           if (result.channels && result.channels.length > 0) {
-            // Alert: Kamera yang baru saja offline
-            const newlyOffline = result.channels.filter(c =>
-              c.last_status !== 'ONLINE' && prevStatusMap[c.channel_no] === 'ONLINE'
-            );
-            if (newlyOffline.length > 0) {
-              const camList = newlyOffline
-                .map(c => `  • *${c.camera_name}* (Ch.${c.channel_no})`)
-                .join('\n');
-              sendEmailAlert('warning', `Kamera Offline Terdeteksi`,
-                `📍 *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\n${camList}`
-              );
-            }
-
             await prisma.channel.deleteMany({ where: { nvr_id: nvr.id } });
             await prisma.channel.createMany({
               data: result.channels.map(c => ({
@@ -100,22 +74,6 @@ const runNvrScheduler = async () => {
           }
 
           if (result.hdds && result.hdds.length > 0) {
-            // Alert: HDD hampir penuh
-            result.hdds.forEach(h => {
-              const usedPct = h.capacity_mb > 0
-                ? Math.round(((h.capacity_mb - h.freespace_mb) / h.capacity_mb) * 100)
-                : 0;
-              if (usedPct >= 95) {
-                sendEmailAlert('critical', `HDD Hampir Penuh (CRITICAL)`,
-                  `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
-                );
-              } else if (usedPct >= 90) {
-                sendEmailAlert('warning', `HDD Hampir Penuh (Warning)`,
-                  `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
-                );
-              }
-            });
-
             await prisma.hDD.deleteMany({ where: { nvr_id: nvr.id } });
             await prisma.hDD.createMany({
               data: result.hdds.map(h => ({
@@ -155,9 +113,6 @@ const runNvrScheduler = async () => {
               }
             });
 
-            sendEmailAlert('critical', `PCNVR Agent Offline`,
-              `🖥️ *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\nAgent tidak mengirim heartbeat lebih dari 40 detik.\nKemungkinan PC CCTV mati atau agent.py berhenti.`
-            );
             await prisma.auditLog.create({
               data: {
                 username: 'system',
@@ -194,8 +149,4 @@ app.listen(PORT, async () => {
   // Run first poll immediately, then schedule every 15 seconds
   setTimeout(runNvrScheduler, 5000);
   setInterval(runNvrScheduler, 15000);
-
-  // Check daily Email report schedule every minute (sends at 06:00, 15:00, & 21:00 WIB)
-  setInterval(checkDailyEmailReportSchedule, 60000);
-  console.log('[Email] Daily report scheduler aktif (06:00, 15:00, & 21:00 WIB).');
 });

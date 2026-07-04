@@ -31,8 +31,6 @@ export default function App() {
   const [isPollingActive, setIsPollingActive] = useState(false);
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [tokenModalNvr, setTokenModalNvr] = useState(null);
-  const [isTelegramSending, setIsTelegramSending] = useState(false);
-  const [telegramStatus, setTelegramStatus] = useState(null); // null | 'ok' | 'error'
 
   // Form states
   const [nvrFormName, setNvrFormName] = useState('');
@@ -336,50 +334,6 @@ export default function App() {
     }
   };
 
-  // Email: Kirim laporan manual
-  const sendEmailReport = async () => {
-    setIsTelegramSending(true);
-    setTelegramStatus(null);
-    try {
-      const response = await fetch('/api/email/report', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        setTelegramStatus('ok');
-      } else {
-        setTelegramStatus('error');
-      }
-    } catch (err) {
-      setTelegramStatus('error');
-    } finally {
-      setIsTelegramSending(false);
-      setTimeout(() => setTelegramStatus(null), 4000);
-    }
-  };
-
-  // Email: Test koneksi SMTP
-  const testEmailSMTP = async () => {
-    setIsTelegramSending(true);
-    setTelegramStatus(null);
-    try {
-      const response = await fetch('/api/email/test', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        setTelegramStatus('ok');
-      } else {
-        setTelegramStatus('error');
-      }
-    } catch (err) {
-      setTelegramStatus('error');
-    } finally {
-      setIsTelegramSending(false);
-      setTimeout(() => setTelegramStatus(null), 4000);
-    }
-  };
-
   // Derived states / Analytics calculations
   const totalNvrs = nvrs.length;
 
@@ -512,8 +466,8 @@ export default function App() {
         <div className="logo-section">
           <span className="logo-icon">📹</span>
           <div>
-            <h1>Dashboard ATI CCTV MONITORING</h1>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Dashboard Monitoring CCTV All Site</span>
+            <h1>ATI CCTV MONITORING</h1>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>SINGLE PANE OF GLASS</span>
           </div>
         </div>
 
@@ -619,54 +573,9 @@ export default function App() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {telegramStatus === 'ok' && (
-                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
-              )}
-              {telegramStatus === 'error' && (
-                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
-              )}
-              <button
-                className="btn"
-                onClick={testEmailSMTP}
-                disabled={isTelegramSending}
-                title="Test koneksi email SMTP"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(32,178,170,0.4)',
-                  color: 'var(--accent-cyan)',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '6px',
-                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
-                  opacity: isTelegramSending ? 0.6 : 1
-                }}
-              >
-                {isTelegramSending ? '⏳' : '📧'} Test SMTP
-              </button>
-              <button
-                className="btn"
-                onClick={sendEmailReport}
-                disabled={isTelegramSending}
-                title="Kirim laporan status semua NVR ke Email sekarang"
-                style={{
-                  background: 'linear-gradient(135deg, #0284c7, #2563eb)',
-                  border: 'none',
-                  color: '#fff',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: '6px',
-                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
-                  opacity: isTelegramSending ? 0.6 : 1,
-                  fontWeight: 600
-                }}
-              >
-                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
-              </button>
-              <button className="btn btn-primary" onClick={openAddNvrModal}>
-                <span>+</span> Register New NVR
-              </button>
-            </div>
+            <button className="btn btn-primary" onClick={openAddNvrModal}>
+              <span>+</span> Register New NVR
+            </button>
           </div>
 
           {/* Grid View */}

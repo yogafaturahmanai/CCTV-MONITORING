@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
-
 /* Reset and Base Styling */
 * {
   box-sizing: border-box;
@@ -8,31 +6,31 @@
 }
 
 :root {
-  --bg-primary: #f8fafc; /* Light gray slate */
-  --bg-secondary: #ffffff; /* Card/Modal backdrops */
-  --bg-tertiary: #f1f5f9; /* Table headers/secondary buttons */
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --border-glass: rgba(0, 0, 0, 0.08);
-  --border-glass-focus: rgba(37, 99, 235, 0.25);
+  --bg-primary: #0a0e17;
+  --bg-secondary: #121826;
+  --bg-tertiary: #1b2336;
+  --bg-glass: rgba(18, 24, 38, 0.7);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-focus: rgba(0, 242, 254, 0.3);
   
-  --text-primary: #0f172a; /* Deep slate */
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   
   /* Vibrant Accents */
-  --accent-cyan: #0284c7; /* Sky Blue */
-  --accent-blue: #2563eb; /* Cobalt Blue */
+  --accent-cyan: #00f2fe;
+  --accent-blue: #4facfe;
   --accent-green: #10b981;
-  --accent-green-glow: rgba(16, 185, 129, 0.08);
-  --accent-amber: #d97706;
-  --accent-amber-glow: rgba(217, 119, 6, 0.08);
-  --accent-rose: #dc2626;
-  --accent-rose-glow: rgba(220, 38, 38, 0.08);
+  --accent-green-glow: rgba(16, 185, 129, 0.15);
+  --accent-amber: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.15);
+  --accent-rose: #ef4444;
+  --accent-rose-glow: rgba(239, 68, 68, 0.15);
   
-  --glow-cyan: 0 4px 12px rgba(37, 99, 235, 0.12);
+  --glow-cyan: 0 0 15px rgba(0, 242, 254, 0.25);
   
-  --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -284,7 +282,7 @@ h2, h3, h4 {
 .nvr-card:hover {
   transform: translateY(-4px);
   border-color: var(--border-glass-focus);
-  box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 .nvr-card-header {

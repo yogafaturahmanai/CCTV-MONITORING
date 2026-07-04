@@ -403,42 +403,4 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
   }
 });
 
-// ─────────────────────────────────────────────
-// EMAIL NOTIFICATION ENDPOINTS
-// ─────────────────────────────────────────────
-const { sendEmailDailyReport, sendEmailAlert } = require('./emailNotifier.cjs');
-
-// POST /api/email/report — Kirim laporan manual (butuh login)
-router.post('/email/report', authenticateToken, async (req, res) => {
-  try {
-    const success = await sendEmailDailyReport();
-    if (success) {
-      res.json({ success: true, message: 'Laporan berhasil dikirim ke Email.' });
-    } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim email laporan. Cek konfigurasi SMTP.' });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/email/test — Kirim test email untuk verifikasi SMTP
-router.post('/email/test', authenticateToken, async (req, res) => {
-  try {
-    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    const success = await sendEmailAlert(
-      'info',
-      'Test Koneksi SMTP Berhasil',
-      `Sistem CCTV Monitoring terhubung dengan mail server SMTP Anda dengan baik.\n🕐 ${now} WIB`
-    );
-    if (success) {
-      res.json({ success: true, message: 'Test email terkirim.' });
-    } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim test email. Cek konfigurasi SMTP.' });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 module.exports = router;
