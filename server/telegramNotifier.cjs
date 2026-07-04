@@ -48,6 +48,10 @@ const sendTelegramMessage = (text, targetChatId = CHAT_ID) => {
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
         try {
+          if (!data) {
+            console.error('[Telegram] Response data kosong.');
+            return resolve(false);
+          }
           const json = JSON.parse(data);
           if (json.ok) {
             console.log('[Telegram] Pesan terkirim.');
@@ -57,7 +61,8 @@ const sendTelegramMessage = (text, targetChatId = CHAT_ID) => {
             resolve(false);
           }
         } catch (e) {
-          reject(e);
+          console.error('[Telegram] Gagal parsing response:', e.message, 'Raw:', data);
+          resolve(false); // Resolve false agar tidak crash
         }
       });
     });
@@ -306,6 +311,10 @@ const runTelegramBotListener = async () => {
     res.on('data', chunk => { data += chunk; });
     res.on('end', async () => {
       try {
+        if (!data) {
+          setTimeout(runTelegramBotListener, 1000);
+          return;
+        }
         const json = JSON.parse(data);
         if (json.ok && json.result) {
           for (const update of json.result) {
