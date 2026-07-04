@@ -349,7 +349,7 @@ router.post('/nvr/:id/regenerate-token', authenticateToken, async (req, res) => 
 // --- PCNVR AGENT HOOKS (PUSH SYSTEM) ---
 router.post('/agent/:nvr_id/heartbeat', authenticateAgentToken, async (req, res) => {
   const { nvr_id } = req.params;
-  
+
   try {
     await prisma.nVR.update({
       where: { id: nvr_id },
@@ -400,6 +400,44 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// TELEGRAM ENDPOINTS
+// ─────────────────────────────────────────────
+const { sendDailyReport, sendTelegramMessage } = require('./telegramNotifier.cjs');
+
+// POST /api/telegram/report — Kirim laporan manual (butuh login)
+router.post('/telegram/report', authenticateToken, async (req, res) => {
+  try {
+    const success = await sendDailyReport();
+    if (success) {
+      res.json({ success: true, message: 'Laporan berhasil dikirim ke Telegram.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim laporan. Cek konfigurasi Bot Token & Chat ID.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/telegram/test — Kirim test message untuk verifikasi bot
+router.post('/telegram/test', authenticateToken, async (req, res) => {
+  try {
+    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const success = await sendTelegramMessage(
+      `✅ *Test Koneksi Bot Berhasil!*\n` +
+      `Bot CCTV Monitoring terhubung dengan baik.\n` +
+      `🕐 _${now} WIB_`
+    );
+    if (success) {
+      res.json({ success: true, message: 'Test message terkirim ke Telegram.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim test message. Cek konfigurasi Bot Token & Chat ID.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

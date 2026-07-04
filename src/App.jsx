@@ -334,6 +334,50 @@ export default function App() {
     }
   };
 
+  // Email: Kirim laporan manual
+  const sendEmailReport = async () => {
+    setIsTelegramSending(true);
+    setTelegramStatus(null);
+    try {
+      const response = await fetch('/api/email/report', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setTelegramStatus('ok');
+      } else {
+        setTelegramStatus('error');
+      }
+    } catch (err) {
+      setTelegramStatus('error');
+    } finally {
+      setIsTelegramSending(false);
+      setTimeout(() => setTelegramStatus(null), 4000);
+    }
+  };
+
+  // Email: Test koneksi SMTP
+  const testEmailSMTP = async () => {
+    setIsTelegramSending(true);
+    setTelegramStatus(null);
+    try {
+      const response = await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setTelegramStatus('ok');
+      } else {
+        setTelegramStatus('error');
+      }
+    } catch (err) {
+      setTelegramStatus('error');
+    } finally {
+      setIsTelegramSending(false);
+      setTimeout(() => setTelegramStatus(null), 4000);
+    }
+  };
+
   // Derived states / Analytics calculations
   const totalNvrs = nvrs.length;
 
@@ -573,9 +617,54 @@ export default function App() {
               </select>
             </div>
 
-            <button className="btn btn-primary" onClick={openAddNvrModal}>
-              <span>+</span> Register New NVR
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {telegramStatus === 'ok' && (
+                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
+              )}
+              {telegramStatus === 'error' && (
+                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
+              )}
+              <button
+                className="btn"
+                onClick={testEmailSMTP}
+                disabled={isTelegramSending}
+                title="Test koneksi email SMTP"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(32,178,170,0.4)',
+                  color: 'var(--accent-cyan)',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
+                  opacity: isTelegramSending ? 0.6 : 1
+                }}
+              >
+                {isTelegramSending ? '⏳' : '📧'} Test SMTP
+              </button>
+              <button
+                className="btn"
+                onClick={sendEmailReport}
+                disabled={isTelegramSending}
+                title="Kirim laporan status semua NVR ke Email sekarang"
+                style={{
+                  background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '6px',
+                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
+                  opacity: isTelegramSending ? 0.6 : 1,
+                  fontWeight: 600
+                }}
+              >
+                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
+              </button>
+              <button className="btn btn-primary" onClick={openAddNvrModal}>
+                <span>+</span> Register New NVR
+              </button>
+            </div>
           </div>
 
           {/* Grid View */}
@@ -762,7 +851,7 @@ export default function App() {
                 {selectedNvr.type === 'pcnvr' && (
                   <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.5rem', borderRadius: '4px', width: 'fit-content' }}>
                     <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>NVR ID: {selectedNvr.id}</span>
-                    <button 
+                    <button
                       style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '3px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.7rem', padding: '2px 6px' }}
                       onClick={() => {
                         navigator.clipboard.writeText(selectedNvr.id);
