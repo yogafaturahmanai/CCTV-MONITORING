@@ -85,6 +85,25 @@ const runNvrScheduler = async () => {
           const diffSeconds = (new Date() - lastHeartbeat) / 1000;
           
           if (diffSeconds > 120) {
+            // Update database status of channels to show offline/timeout
+            await prisma.channel.updateMany({
+              where: { nvr_id: nvr.id },
+              data: {
+                last_status: 'NETWORK_TIMEOUT',
+                last_recording_status: 'UNKNOWN',
+                last_checked_at: new Date()
+              }
+            });
+
+            // Update database status of HDDs to show error/offline
+            await prisma.hDD.updateMany({
+              where: { nvr_id: nvr.id },
+              data: {
+                status: 'error',
+                last_checked_at: new Date()
+              }
+            });
+
             await prisma.auditLog.create({
               data: {
                 username: 'system',
