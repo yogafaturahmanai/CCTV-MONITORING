@@ -368,7 +368,7 @@ export default function App() {
         const lastHeartbeat = new Date(nvr.last_heartbeat_at);
         const now = new Date();
         const diffSeconds = Math.abs(now - lastHeartbeat) / 1000;
-        if (diffSeconds > 120) {
+        if (diffSeconds > 40) {
           return 'stale'; // AGENT_STALE
         }
       } else {
