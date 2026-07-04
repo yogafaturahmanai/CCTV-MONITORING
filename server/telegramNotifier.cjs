@@ -307,6 +307,13 @@ const runTelegramBotListener = async () => {
   };
 
   const req = https.get(options, (res) => {
+    // Deteksi jika diblokir oleh Firewall/Gateway (biasanya return redirect 307 ke ip block page)
+    if (res.statusCode === 307 || res.statusCode === 403 || res.statusCode === 302) {
+      console.warn(`[Telegram Bot] Koneksi ke api.telegram.org diblokir oleh Firewall/Gateway (${res.statusCode}). Polling ditangguhkan 1 menit.`);
+      setTimeout(runTelegramBotListener, 60000); // Coba lagi 1 menit kemudian
+      return;
+    }
+
     let data = '';
     res.on('data', chunk => { data += chunk; });
     res.on('end', async () => {
