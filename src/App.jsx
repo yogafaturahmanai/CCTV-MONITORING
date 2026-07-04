@@ -31,6 +31,8 @@ export default function App() {
   const [isPollingActive, setIsPollingActive] = useState(false);
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [tokenModalNvr, setTokenModalNvr] = useState(null);
+  const [isTelegramSending, setIsTelegramSending] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState(null); // null | 'ok' | 'error'
 
   // Form states
   const [nvrFormName, setNvrFormName] = useState('');
@@ -334,6 +336,50 @@ export default function App() {
     }
   };
 
+  // Telegram: Kirim laporan manual
+  const sendTelegramReport = async () => {
+    setIsTelegramSending(true);
+    setTelegramStatus(null);
+    try {
+      const response = await fetch('/api/telegram/report', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setTelegramStatus('ok');
+      } else {
+        setTelegramStatus('error');
+      }
+    } catch (err) {
+      setTelegramStatus('error');
+    } finally {
+      setIsTelegramSending(false);
+      setTimeout(() => setTelegramStatus(null), 4000);
+    }
+  };
+
+  // Telegram: Test koneksi bot
+  const testTelegramBot = async () => {
+    setIsTelegramSending(true);
+    setTelegramStatus(null);
+    try {
+      const response = await fetch('/api/telegram/test', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setTelegramStatus('ok');
+      } else {
+        setTelegramStatus('error');
+      }
+    } catch (err) {
+      setTelegramStatus('error');
+    } finally {
+      setIsTelegramSending(false);
+      setTimeout(() => setTelegramStatus(null), 4000);
+    }
+  };
+
   // Derived states / Analytics calculations
   const totalNvrs = nvrs.length;
 
@@ -573,9 +619,54 @@ export default function App() {
               </select>
             </div>
 
-            <button className="btn btn-primary" onClick={openAddNvrModal}>
-              <span>+</span> Register New NVR
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {telegramStatus === 'ok' && (
+                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
+              )}
+              {telegramStatus === 'error' && (
+                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
+              )}
+              <button
+                className="btn"
+                onClick={testTelegramBot}
+                disabled={isTelegramSending}
+                title="Test koneksi bot Telegram"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(32,178,170,0.4)',
+                  color: 'var(--accent-cyan)',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
+                  opacity: isTelegramSending ? 0.6 : 1
+                }}
+              >
+                {isTelegramSending ? '⏳' : '🤖'} Test Bot
+              </button>
+              <button
+                className="btn"
+                onClick={sendTelegramReport}
+                disabled={isTelegramSending}
+                title="Kirim laporan status semua NVR ke Telegram sekarang"
+                style={{
+                  background: 'linear-gradient(135deg, #0088cc, #006699)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '6px',
+                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
+                  opacity: isTelegramSending ? 0.6 : 1,
+                  fontWeight: 600
+                }}
+              >
+                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Laporan'}
+              </button>
+              <button className="btn btn-primary" onClick={openAddNvrModal}>
+                <span>+</span> Register New NVR
+              </button>
+            </div>
           </div>
 
           {/* Grid View */}

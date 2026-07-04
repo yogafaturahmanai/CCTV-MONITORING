@@ -403,4 +403,42 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
   }
 });
 
+// ─────────────────────────────────────────────
+// TELEGRAM ENDPOINTS
+// ─────────────────────────────────────────────
+const { sendDailyReport, sendTelegramMessage } = require('./telegramNotifier.cjs');
+
+// POST /api/telegram/report — Kirim laporan manual (butuh login)
+router.post('/telegram/report', authenticateToken, async (req, res) => {
+  try {
+    const success = await sendDailyReport();
+    if (success) {
+      res.json({ success: true, message: 'Laporan berhasil dikirim ke Telegram.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim laporan. Cek konfigurasi Bot Token & Chat ID.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/telegram/test — Kirim test message untuk verifikasi bot
+router.post('/telegram/test', authenticateToken, async (req, res) => {
+  try {
+    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const success = await sendTelegramMessage(
+      `✅ *Test Koneksi Bot Berhasil!*\n` +
+      `Bot CCTV Monitoring terhubung dengan baik.\n` +
+      `🕐 _${now} WIB_`
+    );
+    if (success) {
+      res.json({ success: true, message: 'Test message terkirim ke Telegram.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim test message. Cek konfigurasi Bot Token & Chat ID.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
