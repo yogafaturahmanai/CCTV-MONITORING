@@ -200,10 +200,11 @@ const sendDailyReport = async (targetChatId = CHAT_ID) => {
     }
 
     // ── Detail per NVR ──────────────────────────────────────────
-    report += `\n📌 *Detail per NVR:*\n`;
+    report += `\n📌 *Detail per NVR:*\n\n`;
 
+    const nvrBlocks = [];
     for (const nvr of nvrs) {
-      // Tentukan status ikon
+      // Tentukan status NVR / agent
       let nvrIsOnline = false;
       if (nvr.type === 'pcnvr') {
         if (nvr.last_heartbeat_at) {
@@ -217,31 +218,45 @@ const sendDailyReport = async (targetChatId = CHAT_ID) => {
         );
       }
 
-      const nvrIcon = nvrIsOnline ? '🟢' : '🔴';
       const camOnline = (nvr.channels || []).filter(c => c.last_status === 'ONLINE').length;
       const camTotal  = (nvr.channels || []).length;
+      const camOffline = camTotal - camOnline;
 
-      let nvrLine = `${nvrIcon} *${nvr.name}* _(${nvr.site})_`;
+      let nvrLine = `${nvr.name} (${nvr.site})`;
       if (camTotal > 0) {
         nvrLine += ` | 📷 ${camOnline}/${camTotal}`;
       }
 
+      if (nvr.type === 'pcnvr') {
+        nvrLine += `\n    Type : PC IVMS | Agent Status : ${nvrIsOnline ? 'Ok' : 'Offline'}`;
+      } else {
+        nvrLine += `\n    Type : Hardware NVR`;
+      }
+
+      if (camTotal > 0) {
+        nvrLine += `\n    Offline Cam = ${camOffline}/${camTotal}`;
+      }
+
       // HDD Info per disk
       if (nvr.hdds && nvr.hdds.length > 0) {
-        const hddTexts = nvr.hdds.map(hdd => {
+        const hddLines = nvr.hdds.map(hdd => {
           const usedPct = hdd.capacity_mb > 0
             ? Math.round(((hdd.capacity_mb - hdd.freespace_mb) / hdd.capacity_mb) * 100)
             : 0;
           const freeGB = formatGB(hdd.freespace_mb);
-          const diskLabel = hdd.disk_id.replace(':\\\\', ':').replace(':/', ':');
-          const hddIcon = hdd.status === 'error' ? '🔴' : (usedPct > 90 ? '🟡' : '💾');
-          return `${hddIcon}${diskLabel} ${usedPct}% (sisa ${freeGB})`;
+          let line = `    Disk ${hdd.disk_id} ${usedPct}% (sisa ${freeGB})`;
+          if (nvr.type !== 'pcnvr') {
+            const statusLabel = hdd.status.charAt(0).toUpperCase() + hdd.status.slice(1);
+            line += ` Status:${statusLabel}`;
+          }
+          return line;
         });
-        nvrLine += `\n    ${hddTexts.join(' | ')}`;
+        nvrLine += `\n${hddLines.join('\n')}`;
       }
 
-      report += nvrLine + '\n';
+      nvrBlocks.push(nvrLine);
     }
+    report += nvrBlocks.join('\n\n') + '\n';
 
     // ── Kamera Offline Detail ────────────────────────────────────
     if (offlineCameraDetails.length > 0) {
