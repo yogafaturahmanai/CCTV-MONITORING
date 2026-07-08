@@ -36,6 +36,10 @@ export default function App() {
   const [isTelegramSending, setIsTelegramSending] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState(null);
 
+  // Email report state
+  const [isEmailSending, setIsEmailSending] = useState(false);
+  const [emailStatus, setEmailStatus] = useState(null);
+
   // Form states
   const [nvrFormName, setNvrFormName] = useState('');
   const [nvrFormSite, setNvrFormSite] = useState('');
@@ -382,6 +386,50 @@ export default function App() {
     }
   };
 
+  // Email: Kirim laporan manual
+  const sendEmailReport = async () => {
+    setIsEmailSending(true);
+    setEmailStatus(null);
+    try {
+      const response = await fetch('/api/email/report', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setEmailStatus('ok');
+      } else {
+        setEmailStatus('error');
+      }
+    } catch (err) {
+      setEmailStatus('error');
+    } finally {
+      setIsEmailSending(false);
+      setTimeout(() => setEmailStatus(null), 4000);
+    }
+  };
+
+  // Email: Test koneksi SMTP
+  const testEmailSMTP = async () => {
+    setIsEmailSending(true);
+    setEmailStatus(null);
+    try {
+      const response = await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setEmailStatus('ok');
+      } else {
+        setEmailStatus('error');
+      }
+    } catch (err) {
+      setEmailStatus('error');
+    } finally {
+      setIsEmailSending(false);
+      setTimeout(() => setEmailStatus(null), 4000);
+    }
+  };
+
   // Derived states / Analytics calculations
   const totalNvrs = nvrs.length;
 
@@ -664,6 +712,49 @@ export default function App() {
                 }}
               >
                 {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Laporan'}
+              </button>
+              {emailStatus === 'ok' && (
+                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
+              )}
+              {emailStatus === 'error' && (
+                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
+              )}
+              <button
+                className="btn"
+                onClick={testEmailSMTP}
+                disabled={isEmailSending}
+                title="Test koneksi email SMTP"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(32,178,170,0.4)',
+                  color: 'var(--accent-cyan)',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  cursor: isEmailSending ? 'not-allowed' : 'pointer',
+                  opacity: isEmailSending ? 0.6 : 1
+                }}
+              >
+                {isEmailSending ? '⏳' : '📧'} Test SMTP
+              </button>
+              <button
+                className="btn"
+                onClick={sendEmailReport}
+                disabled={isEmailSending}
+                title="Kirim laporan status semua NVR ke Email sekarang"
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '0.8rem',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '6px',
+                  cursor: isEmailSending ? 'not-allowed' : 'pointer',
+                  opacity: isEmailSending ? 0.6 : 1,
+                  fontWeight: 600
+                }}
+              >
+                {isEmailSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
               </button>
               <button className="btn btn-primary" onClick={openAddNvrModal}>
                 <span>+</span> Register New NVR

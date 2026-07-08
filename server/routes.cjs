@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { pollNvrDevice } = require('./isapiClient.cjs');
-const { sendAlert } = require('./telegramNotifier.cjs');
+const { notify } = require('./notify.cjs');
 
 const PCNVR_LOW_SPACE_THRESHOLD_MB = 100 * 1024; // 100 GB
 
@@ -412,7 +412,7 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
           const diskList = lowSpaceDisks
             .map(h => `  • \`${h.disk_id}\`: sisa ${(parseFloat(h.freespace_mb) / 1024).toFixed(1)} GB`)
             .join('\n');
-          sendAlert('warning', `HDD PCNVR Hampir Penuh`,
+          notify('warning', `HDD PCNVR Hampir Penuh`,
             `🖥️ *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\n${diskList}`
           );
         }
@@ -462,6 +462,42 @@ router.post('/telegram/test', authenticateToken, async (req, res) => {
       res.json({ success: true, message: 'Test message terkirim ke Telegram.' });
     } else {
       res.status(500).json({ success: false, message: 'Gagal mengirim test message. Cek konfigurasi Bot Token & Chat ID.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// EMAIL ENDPOINTS
+// ─────────────────────────────────────────────
+const { sendEmailDailyReport, sendEmailAlert } = require('./emailNotifier.cjs');
+
+// POST /api/email/report — Kirim laporan manual (butuh login)
+router.post('/email/report', authenticateToken, async (req, res) => {
+  try {
+    const success = await sendEmailDailyReport();
+    if (success) {
+      res.json({ success: true, message: 'Laporan berhasil dikirim ke Email.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim laporan. Cek konfigurasi SMTP & EMAIL_TO.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/email/test — Kirim test message untuk verifikasi SMTP
+router.post('/email/test', authenticateToken, async (req, res) => {
+  try {
+    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const success = await sendEmailAlert('info', 'Test Koneksi Email Berhasil',
+      `Email CCTV Monitoring terhubung dengan baik.\n🕐 _${now} WIB_`
+    );
+    if (success) {
+      res.json({ success: true, message: 'Test email terkirim.' });
+    } else {
+      res.status(500).json({ success: false, message: 'Gagal mengirim test email. Cek konfigurasi SMTP & EMAIL_TO.' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
