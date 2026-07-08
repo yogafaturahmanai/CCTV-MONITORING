@@ -6,6 +6,8 @@ services:
     container_name: cctv-monitoring-dashboard
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=file:/app/prisma/data/production.db
       - JWT_SECRET=ati_cctv_monitoring_secret_key

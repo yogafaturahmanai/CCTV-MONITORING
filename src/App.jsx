@@ -32,6 +32,10 @@ export default function App() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [tokenModalNvr, setTokenModalNvr] = useState(null);
 
+  // Telegram report state
+  const [isTelegramSending, setIsTelegramSending] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState(null);
+
   // Form states
   const [nvrFormName, setNvrFormName] = useState('');
   const [nvrFormSite, setNvrFormSite] = useState('');
@@ -334,12 +338,12 @@ export default function App() {
     }
   };
 
-  // Email: Kirim laporan manual
-  const sendEmailReport = async () => {
+  // Telegram: Kirim laporan manual
+  const sendTelegramReport = async () => {
     setIsTelegramSending(true);
     setTelegramStatus(null);
     try {
-      const response = await fetch('/api/email/report', {
+      const response = await fetch('/api/telegram/report', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -356,12 +360,12 @@ export default function App() {
     }
   };
 
-  // Email: Test koneksi SMTP
-  const testEmailSMTP = async () => {
+  // Telegram: Test koneksi bot
+  const testTelegramBot = async () => {
     setIsTelegramSending(true);
     setTelegramStatus(null);
     try {
-      const response = await fetch('/api/email/test', {
+      const response = await fetch('/api/telegram/test', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -626,9 +630,9 @@ export default function App() {
               )}
               <button
                 className="btn"
-                onClick={testEmailSMTP}
+                onClick={testTelegramBot}
                 disabled={isTelegramSending}
-                title="Test koneksi email SMTP"
+                title="Test koneksi bot Telegram"
                 style={{
                   background: 'transparent',
                   border: '1px solid rgba(32,178,170,0.4)',
@@ -640,13 +644,13 @@ export default function App() {
                   opacity: isTelegramSending ? 0.6 : 1
                 }}
               >
-                {isTelegramSending ? '⏳' : '📧'} Test SMTP
+                {isTelegramSending ? '⏳' : '🤖'} Test Bot
               </button>
               <button
                 className="btn"
-                onClick={sendEmailReport}
+                onClick={sendTelegramReport}
                 disabled={isTelegramSending}
-                title="Kirim laporan status semua NVR ke Email sekarang"
+                title="Kirim laporan status semua NVR ke Telegram sekarang"
                 style={{
                   background: 'linear-gradient(135deg, #0284c7, #2563eb)',
                   border: 'none',
@@ -659,7 +663,7 @@ export default function App() {
                   fontWeight: 600
                 }}
               >
-                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
+                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Laporan'}
               </button>
               <button className="btn btn-primary" onClick={openAddNvrModal}>
                 <span>+</span> Register New NVR
