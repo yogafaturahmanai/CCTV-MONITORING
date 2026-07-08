@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { PrismaClient } = require('@prisma/client');
 const { pollNvrDevice } = require('./isapiClient.cjs');
+const { sendAlert } = require('./telegramNotifier.cjs');
+
+const PCNVR_LOW_SPACE_THRESHOLD_MB = 100 * 1024; // 100 GB
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -380,6 +383,10 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
     }
 
     if (hdds && hdds.length > 0) {
+      const prevHdds = await prisma.hDD.findMany({ where: { nvr_id } });
+      const prevFreeMap = {};
+      prevHdds.forEach(h => { prevFreeMap[h.disk_id] = h.freespace_mb; });
+
       await prisma.hDD.deleteMany({ where: { nvr_id } });
       await prisma.hDD.createMany({
         data: hdds.map(h => ({
@@ -390,6 +397,26 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
           status: h.status
         }))
       });
+
+      // Alert: sisa ruang disk PCNVR di bawah 100 GB (baru terjadi, bukan tiap heartbeat)
+      const lowSpaceDisks = hdds.filter(h => {
+        const freeMb = parseFloat(h.freespace_mb);
+        const prevFreeMb = prevFreeMap[h.disk_id];
+        const wasAboveThreshold = prevFreeMb === undefined || prevFreeMb >= PCNVR_LOW_SPACE_THRESHOLD_MB;
+        return freeMb < PCNVR_LOW_SPACE_THRESHOLD_MB && wasAboveThreshold;
+      });
+
+      if (lowSpaceDisks.length > 0) {
+        const nvr = await prisma.nVR.findUnique({ where: { id: nvr_id } });
+        if (nvr) {
+          const diskList = lowSpaceDisks
+            .map(h => `  • \`${h.disk_id}\`: sisa ${(parseFloat(h.freespace_mb) / 1024).toFixed(1)} GB`)
+            .join('\n');
+          sendAlert('warning', `HDD PCNVR Hampir Penuh`,
+            `🖥️ *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\n${diskList}`
+          );
+        }
+      }
     }
 
     await prisma.nVR.update({

@@ -43,10 +43,14 @@ const runNvrScheduler = async () => {
         }
         lastPolledCache[nvr.id] = now;
 
-        // Ambil status channel sebelumnya untuk deteksi perubahan (alert)
+        // Ambil status channel & HDD sebelumnya untuk deteksi perubahan (alert)
         const prevChannels = await prisma.channel.findMany({ where: { nvr_id: nvr.id } });
         const prevStatusMap = {};
         prevChannels.forEach(c => { prevStatusMap[c.channel_no] = c.last_status; });
+
+        const prevHdds = await prisma.hDD.findMany({ where: { nvr_id: nvr.id } });
+        const prevHddStatusMap = {};
+        prevHdds.forEach(h => { prevHddStatusMap[h.disk_id] = h.status; });
 
         const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
 
@@ -101,18 +105,13 @@ const runNvrScheduler = async () => {
           }
 
           if (result.hdds && result.hdds.length > 0) {
-            // Alert: HDD hampir penuh
+            // Alert: HDD bermasalah (bukan berdasar % terpakai, karena NVR hardware
+            // memang didesain overwrite terus-menerus hingga mendekati penuh)
             result.hdds.forEach(h => {
-              const usedPct = h.capacity_mb > 0
-                ? Math.round(((h.capacity_mb - h.freespace_mb) / h.capacity_mb) * 100)
-                : 0;
-              if (usedPct >= 95) {
-                sendAlert('critical', `HDD Hampir Penuh (CRITICAL)`,
-                  `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
-                );
-              } else if (usedPct >= 90) {
-                sendAlert('warning', `HDD Hampir Penuh (Warning)`,
-                  `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
+              const wasNormal = (prevHddStatusMap[h.disk_id] || 'normal') === 'normal';
+              if (h.status !== 'normal' && wasNormal) {
+                sendAlert('critical', `HDD Bermasalah`,
+                  `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: status *${h.status}*`
                 );
               }
             });
