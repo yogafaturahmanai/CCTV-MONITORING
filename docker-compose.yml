@@ -12,6 +12,8 @@ services:
       - DATABASE_URL=file:/app/prisma/data/production.db
       - JWT_SECRET=ati_cctv_monitoring_secret_key
       - NODE_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
     volumes:
       - cctv-db-data:/app/prisma/data
     restart: always
