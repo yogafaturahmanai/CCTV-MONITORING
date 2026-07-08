@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const routes = require('./routes.cjs');
 const { pollNvrDevice } = require('./isapiClient.cjs');
-const { sendEmailAlert, checkDailyEmailReportSchedule } = require('./emailNotifier.cjs');
+const { sendAlert, checkDailyReportSchedule } = require('./telegramNotifier.cjs');
 
 const path = require('path');
 const prisma = new PrismaClient();
@@ -42,13 +43,18 @@ const runNvrScheduler = async () => {
         }
         lastPolledCache[nvr.id] = now;
 
+        // Ambil status channel sebelumnya untuk deteksi perubahan (alert)
+        const prevChannels = await prisma.channel.findMany({ where: { nvr_id: nvr.id } });
+        const prevStatusMap = {};
+        prevChannels.forEach(c => { prevStatusMap[c.channel_no] = c.last_status; });
+
         const result = await pollNvrDevice(nvr, decryptPassword(nvr.password_encrypted));
 
         if (result.status === 'AUTH_FAILED' || result.status === 'NETWORK_TIMEOUT') {
           // Alert: NVR tidak bisa dihubungi
           const prevNvrOnline = prevChannels.some(c => c.last_status === 'ONLINE');
           if (prevNvrOnline) {
-            sendEmailAlert('critical', `NVR Tidak Dapat Dijangkau`,
+            sendAlert('critical', `NVR Tidak Dapat Dijangkau`,
               `❌ *${nvr.name}* (${nvr.site}) — ${nvr.ip_address}:${nvr.port}\nStatus: \`${result.status}\``
             );
           }
@@ -77,7 +83,7 @@ const runNvrScheduler = async () => {
               const camList = newlyOffline
                 .map(c => `  • *${c.camera_name}* (Ch.${c.channel_no})`)
                 .join('\n');
-              sendEmailAlert('warning', `Kamera Offline Terdeteksi`,
+              sendAlert('warning', `Kamera Offline Terdeteksi`,
                 `📍 *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\n${camList}`
               );
             }
@@ -101,11 +107,11 @@ const runNvrScheduler = async () => {
                 ? Math.round(((h.capacity_mb - h.freespace_mb) / h.capacity_mb) * 100)
                 : 0;
               if (usedPct >= 95) {
-                sendEmailAlert('critical', `HDD Hampir Penuh (CRITICAL)`,
+                sendAlert('critical', `HDD Hampir Penuh (CRITICAL)`,
                   `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
                 );
               } else if (usedPct >= 90) {
-                sendEmailAlert('warning', `HDD Hampir Penuh (Warning)`,
+                sendAlert('warning', `HDD Hampir Penuh (Warning)`,
                   `💾 *${nvr.name}* (${nvr.site})\nDisk \`${h.disk_id}\`: *${usedPct}%* terpakai\nSisa: ${(h.freespace_mb / 1024).toFixed(1)} GB`
                 );
               }
@@ -150,7 +156,7 @@ const runNvrScheduler = async () => {
               }
             });
 
-            sendEmailAlert('critical', `PCNVR Agent Offline`,
+            sendAlert('critical', `PCNVR Agent Offline`,
               `🖥️ *${nvr.name}* (${nvr.site}) — \`${nvr.ip_address}\`\nAgent tidak mengirim heartbeat lebih dari 40 detik.\nKemungkinan PC CCTV mati atau agent.py berhenti.`
             );
             await prisma.auditLog.create({
@@ -190,7 +196,7 @@ app.listen(PORT, async () => {
   setTimeout(runNvrScheduler, 5000);
   setInterval(runNvrScheduler, 15000);
 
-  // Check daily Email report schedule every minute (sends at 06:00, 15:00, & 21:00 WIB)
-  setInterval(checkDailyEmailReportSchedule, 60000);
-  console.log('[Email] Daily report scheduler aktif (06:00, 15:00, & 21:00 WIB).');
+  // Check daily Telegram report schedule every minute (sends at 06:00, 15:00, & 21:00 WIB)
+  setInterval(checkDailyReportSchedule, 60000);
+  console.log('[Telegram] Daily report scheduler aktif (06:00, 15:00, & 21:00 WIB).');
 });

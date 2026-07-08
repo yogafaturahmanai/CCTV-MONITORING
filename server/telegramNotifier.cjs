@@ -12,8 +12,12 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8179493228:AAFXGyEc7p3vqgHSjdMRjZ77awQ1gBisevg';
-const CHAT_ID   = process.env.TELEGRAM_CHAT_ID   || '-1004330317354';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID   = process.env.TELEGRAM_CHAT_ID;
+
+if (!BOT_TOKEN || !CHAT_ID) {
+  console.warn('[Telegram] TELEGRAM_BOT_TOKEN dan/atau TELEGRAM_CHAT_ID belum diset di .env. Notifikasi Telegram tidak akan terkirim.');
+}
 
 // ─────────────────────────────────────────────
 // Helper: Kirim pesan ke Telegram via Bot API
