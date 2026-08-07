@@ -609,7 +609,7 @@ export default function App() {
               </div>
             </div>
             <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'rgba(0,242,254,0.15)', color: 'var(--accent-cyan)' }}>🎥</div>
+              <div className="metric-icon" style={{ background: 'rgba(37,99,235,0.12)', color: 'var(--accent-cyan)' }}>🎥</div>
               <div className="metric-info">
                 <h4>Total Channels</h4>
                 <p>{totalChannels}</p>
@@ -683,7 +683,7 @@ export default function App() {
                 title="Test koneksi bot Telegram"
                 style={{
                   background: 'transparent',
-                  border: '1px solid rgba(32,178,170,0.4)',
+                  border: '1px solid rgba(37,99,235,0.3)',
                   color: 'var(--accent-cyan)',
                   fontSize: '0.8rem',
                   padding: '0.4rem 0.75rem',
@@ -726,7 +726,7 @@ export default function App() {
                 title="Test koneksi email SMTP"
                 style={{
                   background: 'transparent',
-                  border: '1px solid rgba(32,178,170,0.4)',
+                  border: '1px solid rgba(37,99,235,0.3)',
                   color: 'var(--accent-cyan)',
                   fontSize: '0.8rem',
                   padding: '0.4rem 0.75rem',
@@ -944,10 +944,10 @@ export default function App() {
                   {selectedNvr.ip_address}:{selectedNvr.port} &bull; {selectedNvr.site} &bull; {selectedNvr.type === 'pcnvr' ? 'PCNVR Agent Model' : 'ISAPI Polling Model'}
                 </p>
                 {selectedNvr.type === 'pcnvr' && (
-                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.5rem', borderRadius: '4px', width: 'fit-content' }}>
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.25rem 0.5rem', borderRadius: '4px', width: 'fit-content' }}>
                     <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>NVR ID: {selectedNvr.id}</span>
                     <button
-                      style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '3px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.7rem', padding: '2px 6px' }}
+                      style={{ background: 'rgba(20,24,31,0.08)', border: 'none', borderRadius: '3px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.7rem', padding: '2px 6px' }}
                       onClick={() => {
                         navigator.clipboard.writeText(selectedNvr.id);
                         alert('NVR ID disalin ke clipboard!');
@@ -1225,7 +1225,7 @@ export default function App() {
                 )}
 
                 {nvrFormType === 'pcnvr' && (
-                  <div style={{ background: 'rgba(0, 242, 254, 0.05)', border: '1px solid rgba(0, 242, 254, 0.2)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ background: 'rgba(37, 99, 235, 0.06)', border: '1px solid rgba(37, 99, 235, 0.2)', padding: '0.75rem', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     ℹ️ Tipe <strong>PCNVR</strong> menggunakan mode push heartbeat & status. Setelah disimpan, token autentikasi agent akan dibuat otomatis.
                   </div>
                 )}
