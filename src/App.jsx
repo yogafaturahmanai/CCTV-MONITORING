@@ -495,61 +495,149 @@ export default function App() {
   // Target NVR Details
   const selectedNvr = nvrs.find(n => n.id === selectedNvrId);
 
+  // Toggle password visibility in Login
+  const [showPassword, setShowPassword] = useState(false);
+
   // Render Login page if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="login-wrapper">
-        <div className="login-card">
-          <div className="logo-section" style={{ justifyContent: 'center', marginBottom: '1rem' }}>
-            <span className="logo-icon">📹</span>
-            <h1>ATI CCTV MONITORING</h1>
-          </div>
-          <p className="login-subtitle">IT Infrastructure Single Pane of Glass NVR Status</p>
-
-          <form onSubmit={handleLogin}>
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Username</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Masukkan username (e.g. admin)"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={lockoutTime !== null}
-              />
+        <div className="login-container">
+          
+          {/* Left Panel: Red Gradient Banner */}
+          <div className="login-banner-panel">
+            <div className="banner-top-icon">
+              <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg" className="banner-warehouse-svg">
+                {/* Warehouse / NVR Storage Roof & Base Vector */}
+                <path d="M100 10 L10 65 L25 65 L25 170 L175 170 L175 65 L190 65 Z" fill="#ffffff" />
+                <path d="M35 75 H165 V90 H35 Z" fill="#e60040" />
+                <path d="M35 98 H165 V113 H35 Z" fill="#e60040" />
+                {/* Storage boxes / Grid */}
+                <rect x="50" y="125" width="28" height="28" fill="#e60040" rx="3" />
+                <rect x="86" y="125" width="28" height="28" fill="#e60040" rx="3" />
+                <rect x="122" y="125" width="28" height="28" fill="#e60040" rx="3" />
+              </svg>
             </div>
 
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-input"
-                placeholder="Masukkan password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={lockoutTime !== null}
-              />
-            </div>
-
-            {loginError && (
-              <div style={{ color: 'var(--accent-rose)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-                {loginError}
-                {lockoutTime !== null && (
-                  <span style={{ fontWeight: 'bold', display: 'block', marginTop: '0.25rem' }}>
-                    Tunggu {lockoutTime}s...
-                  </span>
-                )}
+            <div className="banner-text-content">
+              <h2 className="banner-title">
+                IT Operations Network Retention Center
+              </h2>
+              <p className="banner-description">
+                Centralized Network Logging &amp; Configuration Backup Platform.
+              </p>
+              
+              <div className="banner-compliance-tag">
+                <span className="dot-indicator"></span>
+                <span>IT Operations • Network Security &amp; Compliance</span>
               </div>
-            )}
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={lockoutTime !== null}>
-              Masuk Dashboard
-            </button>
-          </form>
-
-          <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Gunakan username: <strong style={{ color: 'var(--text-secondary)' }}>admin</strong> & password: <strong style={{ color: 'var(--text-secondary)' }}>admin123</strong>
+            </div>
           </div>
+
+          {/* Right Panel: Clean White Login Form */}
+          <div className="login-form-panel">
+            <div className="login-header-logo">
+              <div className="ati-logo">
+                <span className="ati-bold">ati</span>
+                <div className="ati-sub">
+                  <span>BUSINESS</span>
+                  <span>GROUP</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="login-heading-group">
+              <h1 className="login-welcome-title">Welcome Back.</h1>
+              <p className="login-welcome-subtitle">Silahkan login dengan Akun Active Directory</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="login-form">
+              <div className="login-input-group">
+                <label className="login-label">Username / Akun AD</label>
+                <div className="input-icon-wrapper">
+                  <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <input
+                    type="text"
+                    className="login-input"
+                    placeholder="nama.pengguna"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    disabled={lockoutTime !== null}
+                  />
+                </div>
+              </div>
+
+              <div className="login-input-group">
+                <label className="login-label">Password</label>
+                <div className="input-icon-wrapper">
+                  <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="login-input"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={lockoutTime !== null}
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex="-1"
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="login-error-message">
+                  ⚠️ {loginError}
+                  {lockoutTime !== null && (
+                    <span style={{ fontWeight: 'bold', display: 'block', marginTop: '0.25rem' }}>
+                      Tunggu {lockoutTime}s...
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="login-submit-btn"
+                disabled={lockoutTime !== null}
+              >
+                <span>Masuk Sistem</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="btn-arrow-icon">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </form>
+
+            <div className="login-footer">
+              <span className="login-hint-text">
+                Demo: <strong style={{ color: '#475569' }}>admin</strong> / <strong style={{ color: '#475569' }}>admin123</strong>
+              </span>
+              <span className="login-portal-tag">IT Operations Portal</span>
+            </div>
+          </div>
+
         </div>
       </div>
     );
