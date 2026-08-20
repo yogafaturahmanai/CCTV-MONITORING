@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import atiLogo from './assets/atilogo.png';
+import cctvIcon from './assets/cctvicon.png';
 
 export default function App() {
   // Auth state
@@ -504,32 +506,23 @@ export default function App() {
       <div className="login-wrapper">
         <div className="login-container">
           
-          {/* Left Panel: Red Gradient Banner */}
+          {/* Left Panel: Blue Gradient Banner */}
           <div className="login-banner-panel">
             <div className="banner-top-icon">
-              <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg" className="banner-warehouse-svg">
-                {/* Warehouse / NVR Storage Roof & Base Vector */}
-                <path d="M100 10 L10 65 L25 65 L25 170 L175 170 L175 65 L190 65 Z" fill="#ffffff" />
-                <path d="M35 75 H165 V90 H35 Z" fill="#e60040" />
-                <path d="M35 98 H165 V113 H35 Z" fill="#e60040" />
-                {/* Storage boxes / Grid */}
-                <rect x="50" y="125" width="28" height="28" fill="#e60040" rx="3" />
-                <rect x="86" y="125" width="28" height="28" fill="#e60040" rx="3" />
-                <rect x="122" y="125" width="28" height="28" fill="#e60040" rx="3" />
-              </svg>
+              <img src={cctvIcon} alt="CCTV Monitoring Icon" className="banner-cctv-img" />
             </div>
 
             <div className="banner-text-content">
               <h2 className="banner-title">
-                IT Operations Network Retention Center
+                IT Operations CCTV Monitoring Center
               </h2>
               <p className="banner-description">
-                Centralized Network Logging &amp; Configuration Backup Platform.
+                Centralized NVR Monitoring, Storage Retention &amp; Video Loss Alert Platform.
               </p>
               
               <div className="banner-compliance-tag">
                 <span className="dot-indicator"></span>
-                <span>IT Operations • Network Security &amp; Compliance</span>
+                <span>IT Operations • CCTV Security &amp; Compliance</span>
               </div>
             </div>
           </div>
@@ -537,13 +530,7 @@ export default function App() {
           {/* Right Panel: Clean White Login Form */}
           <div className="login-form-panel">
             <div className="login-header-logo">
-              <div className="ati-logo">
-                <span className="ati-bold">ati</span>
-                <div className="ati-sub">
-                  <span>BUSINESS</span>
-                  <span>GROUP</span>
-                </div>
-              </div>
+              <img src={atiLogo} alt="ATI Business Group Logo" className="ati-company-logo-img" />
             </div>
 
             <div className="login-heading-group">
