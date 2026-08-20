@@ -535,12 +535,12 @@ export default function App() {
 
             <div className="login-heading-group">
               <h1 className="login-welcome-title">Welcome Back.</h1>
-              <p className="login-welcome-subtitle">Silahkan login dengan Akun Active Directory</p>
+              <p className="login-welcome-subtitle">Silahkan login</p>
             </div>
 
             <form onSubmit={handleLogin} className="login-form">
               <div className="login-input-group">
-                <label className="login-label">Username / Akun AD</label>
+                <label className="login-label">Username</label>
                 <div className="input-icon-wrapper">
                   <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -617,10 +617,7 @@ export default function App() {
               </button>
             </form>
 
-            <div className="login-footer">
-              <span className="login-hint-text">
-                Demo: <strong style={{ color: '#475569' }}>admin</strong> / <strong style={{ color: '#475569' }}>admin123</strong>
-              </span>
+            <div className="login-footer" style={{ justifyContent: 'flex-end' }}>
               <span className="login-portal-tag">IT Operations Portal</span>
             </div>
           </div>
