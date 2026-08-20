@@ -852,9 +852,9 @@ h2, h3, h4 {
 }
 
 .ati-company-logo-img {
-  height: 48px;
+  height: 32px;
   width: auto;
-  max-width: 180px;
+  max-width: 130px;
   object-fit: contain;
 }
 
