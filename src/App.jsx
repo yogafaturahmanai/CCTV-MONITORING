@@ -916,8 +916,7 @@ export default function App() {
                   <table className="modern-hdd-table">
                     <thead>
                       <tr>
-                        <th>Disk ID</th>
-                        <th>NVR Device</th>
+                        <th>NVR / Disk ID</th>
                         <th>Kapasitas</th>
                         <th>Terpakai</th>
                         <th>Sisa Free Space</th>
@@ -926,72 +925,105 @@ export default function App() {
                     </thead>
                     <tbody>
                       {siteStorageOverview.map(site => {
+                        // Group hdds by NVR within this site
+                        const nvrMap = {};
+                        site.hdds.forEach(hdd => {
+                          if (!nvrMap[hdd.nvrId]) {
+                            nvrMap[hdd.nvrId] = { nvrName: hdd.nvrName, nvrIp: hdd.nvrIp, disks: [] };
+                          }
+                          nvrMap[hdd.nvrId].disks.push(hdd);
+                        });
+                        const nvrGroups = Object.entries(nvrMap);
+
                         const siteTotalFreeGb = (site.totalFreeMb / 1024).toFixed(1);
                         const siteTotalCapGb = (site.totalCapacityMb / 1024).toFixed(1);
+                        const isSiteLow = site.totalCapacityMb > 0 && (site.totalFreeMb / site.totalCapacityMb) < 0.1;
+
                         return (
                           <>
-                            {/* Site Group Header Row */}
-                            <tr key={`site-header-${site.siteName}`} className="hdd-site-group-header">
-                              <td colSpan="6">
+                            {/* ── SITE HEADER ROW ── */}
+                            <tr key={`site-hdr-${site.siteName}`} className="hdd-site-group-header">
+                              <td colSpan="5">
                                 <div className="hdd-site-group-title">
                                   <span className="hdd-site-pin">📍</span>
                                   <strong>{site.siteName}</strong>
                                   <span className="hdd-site-meta">{site.nvrsCount} NVR Device</span>
                                   <span className="hdd-site-summary">
-                                    Total Sisa: <strong className={site.totalFreeMb / site.totalCapacityMb < 0.1 ? 'free-text-warning' : 'free-text-good'}>{siteTotalFreeGb} GB</strong>
+                                    Total Sisa:&nbsp;
+                                    <strong className={isSiteLow ? 'free-text-warning' : 'free-text-good'}>
+                                      {siteTotalFreeGb} GB
+                                    </strong>
                                     <span className="hdd-site-cap"> / {siteTotalCapGb} GB</span>
                                   </span>
                                 </div>
                               </td>
                             </tr>
-                            {/* Disk Rows for this Site */}
-                            {site.hdds.map((hdd, idx) => {
-                              const usedMb = (hdd.capacity_mb || 0) - (hdd.freespace_mb || 0);
-                              const usagePct = hdd.capacity_mb > 0 ? Math.round((usedMb / hdd.capacity_mb) * 100) : 0;
-                              const freeGb = ((hdd.freespace_mb || 0) / 1024).toFixed(1);
-                              const capGb = ((hdd.capacity_mb || 0) / 1024).toFixed(1);
-                              const usedGb = (usedMb / 1024).toFixed(1);
 
-                              let hddSeverity = 'online';
-                              if (hdd.status === 'error') hddSeverity = 'offline';
-                              else if (usagePct > 90) hddSeverity = 'warning';
-
-                              return (
-                                <tr key={`${site.siteName}-${hdd.nvrId}-${hdd.disk_id}-${idx}`} className="hdd-disk-row">
-                                  <td><code className="disk-code">{hdd.disk_id}</code></td>
-                                  <td>
-                                    <span className="nvr-name-inline">{hdd.nvrName}</span>
-                                    <span className="nvr-ip-sub">({hdd.nvrIp})</span>
-                                  </td>
-                                  <td>{capGb} GB</td>
-                                  <td>
-                                    <div className="usage-bar-cell">
-                                      <span>{usedGb} GB ({usagePct}%)</span>
-                                      <div className="mini-progress-track">
-                                        <div
-                                          className={`mini-progress-fill ${hddSeverity}`}
-                                          style={{ width: `${usagePct}%` }}
-                                        ></div>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <strong className={usagePct > 90 ? 'free-text-warning' : 'free-text-good'}>
-                                      {freeGb} GB
-                                    </strong>
-                                  </td>
-                                  <td>
-                                    <span className={`indicator-dot ${hddSeverity}`}></span>
-                                    <span className="hdd-status-text">{hdd.status || 'Normal'}</span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                            {site.hdds.length === 0 && (
+                            {nvrGroups.length === 0 && (
                               <tr key={`${site.siteName}-empty`}>
-                                <td colSpan="6" className="hdd-empty-site-row">Belum ada data HDD terdeteksi di site ini.</td>
+                                <td colSpan="5" className="hdd-empty-site-row">
+                                  Belum ada data HDD terdeteksi di site ini.
+                                </td>
                               </tr>
                             )}
+
+                            {/* ── Per-NVR group ── */}
+                            {nvrGroups.map(([nvrId, nvrData]) => (
+                              <>
+                                {/* NVR Sub-header */}
+                                <tr key={`nvr-hdr-${nvrId}`} className="hdd-nvr-subheader">
+                                  <td colSpan="5">
+                                    <div className="hdd-nvr-title">
+                                      <span className="hdd-nvr-icon">🖥️</span>
+                                      <strong>{nvrData.nvrName}</strong>
+                                      <span className="nvr-ip-sub">({nvrData.nvrIp})</span>
+                                    </div>
+                                  </td>
+                                </tr>
+
+                                {/* Disk Rows */}
+                                {nvrData.disks.map((hdd, idx) => {
+                                  const usedMb = (hdd.capacity_mb || 0) - (hdd.freespace_mb || 0);
+                                  const usagePct = hdd.capacity_mb > 0 ? Math.round((usedMb / hdd.capacity_mb) * 100) : 0;
+                                  const freeGb = ((hdd.freespace_mb || 0) / 1024).toFixed(1);
+                                  const capGb = ((hdd.capacity_mb || 0) / 1024).toFixed(1);
+                                  const usedGb = (usedMb / 1024).toFixed(1);
+
+                                  let hddSeverity = 'online';
+                                  if (hdd.status === 'error') hddSeverity = 'offline';
+                                  else if (usagePct > 90) hddSeverity = 'warning';
+
+                                  return (
+                                    <tr key={`${nvrId}-${hdd.disk_id}-${idx}`} className="hdd-disk-row">
+                                      <td>
+                                        <code className="disk-code">{hdd.disk_id}</code>
+                                      </td>
+                                      <td>{capGb} GB</td>
+                                      <td>
+                                        <div className="usage-bar-cell">
+                                          <span>{usedGb} GB ({usagePct}%)</span>
+                                          <div className="mini-progress-track">
+                                            <div
+                                              className={`mini-progress-fill ${hddSeverity}`}
+                                              style={{ width: `${usagePct}%` }}
+                                            ></div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <strong className={usagePct > 90 ? 'free-text-warning' : 'free-text-good'}>
+                                          {freeGb} GB
+                                        </strong>
+                                      </td>
+                                      <td>
+                                        <span className={`indicator-dot ${hddSeverity}`}></span>
+                                        <span className="hdd-status-text">{hdd.status || 'Normal'}</span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </>
+                            ))}
                           </>
                         );
                       })}
@@ -999,6 +1031,7 @@ export default function App() {
                   </table>
                 </div>
               </div>
+
 
 
               {/* Right Middle Card: Camera Operational Capacity (Current Truck Capacity in reference) */}
