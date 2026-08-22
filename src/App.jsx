@@ -565,6 +565,32 @@ export default function App() {
     return Object.values(siteMap);
   }, [nvrs]);
 
+  // List of cameras requiring attention (Offline or Not Recording)
+  const attentionCameras = React.useMemo(() => {
+    const list = [];
+    nvrs.forEach(nvr => {
+      if (nvr.channels) {
+        nvr.channels.forEach(ch => {
+          const isOnline = ch.last_status === 'ONLINE';
+          const isRec = ch.last_recording_status === 'RECORDING';
+          if (!isOnline || !isRec) {
+            list.push({
+              id: ch.id || `${nvr.id}-${ch.channel_no}`,
+              camera_name: ch.camera_name || `Camera CH-${ch.channel_no}`,
+              channel_no: ch.channel_no,
+              nvr_name: nvr.name,
+              site: nvr.site || 'Unassigned',
+              isOnline,
+              isRec,
+              statusLabel: !isOnline ? 'OFFLINE' : 'NO RECORD'
+            });
+          }
+        });
+      }
+    });
+    return list;
+  }, [nvrs]);
+
   // Unique sites for filtering
   const sitesList = ['All Sites', ...new Set(nvrs.map(n => n.site))];
 
@@ -830,46 +856,50 @@ export default function App() {
             
             {/* HERO PANEL: SITE TOPOLOGY STATUS MAP HUB & ALERTS (Reference Top Area) */}
             <div className="hero-hub-container">
-              {/* Left Hero Card: Site Topology Map Hub */}
+              {/* Left Hero Card: Site CCTV NVR Status */}
               <div className="hero-hub-card map-topology-card">
                 <div className="card-top-header">
                   <div>
-                    <h3>🗺️ Site Network Topology &amp; Status Hub</h3>
-                    <p>Status NVR &amp; konektivitas server real-time di seluruh site ATI</p>
+                    <h3>🖥️ Site CCTV NVR Status</h3>
+                    <p>Status NVR &amp; konektivitas server real-time di seluruh site ATI ({nvrs.length} Device)</p>
                   </div>
                   <span className="live-status-pill">● LIVE MONITORING</span>
                 </div>
 
                 <div className="site-topology-nodes-grid">
-                  {siteStorageOverview.map(siteItem => {
-                    const siteNvrs = nvrs.filter(n => (n.site || 'Unassigned Site') === siteItem.siteName);
-                    const hasOffline = siteNvrs.some(n => getNvrStatus(n) === 'offline');
-                    const hasStale = siteNvrs.some(n => getNvrStatus(n) === 'stale');
-                    let healthStatus = 'online';
+                  {nvrs.map(nvr => {
+                    const nvrStatus = getNvrStatus(nvr);
                     let healthLabel = 'ONLINE';
-                    if (hasOffline) {
-                      healthStatus = 'offline';
-                      healthLabel = 'OFFLINE';
-                    } else if (hasStale) {
-                      healthStatus = 'stale';
-                      healthLabel = 'AGENT STALE';
-                    }
+                    if (nvrStatus === 'offline') healthLabel = 'OFFLINE';
+                    else if (nvrStatus === 'stale') healthLabel = 'AGENT STALE';
+                    else if (nvrStatus === 'partial') healthLabel = 'PARTIAL';
 
                     return (
                       <div
-                        key={siteItem.siteName}
-                        className={`topology-site-node health-${healthStatus}`}
+                        key={nvr.id}
+                        className={`topology-site-node health-${nvrStatus}`}
+                        onClick={() => {
+                          setSelectedNvrId(nvr.id);
+                          setSelectedNvrChannels(nvr.channels || []);
+                          setSelectedNvrHdds(nvr.hdds || []);
+                          setIsDetailModalOpen(true);
+                        }}
+                        title={`Klik untuk detail device: ${nvr.name}`}
+                        style={{ cursor: 'pointer' }}
                       >
                         <div className="node-details">
-                          <strong>📍 {siteItem.siteName}</strong>
-                          <span>{siteItem.nvrsCount} Device NVR</span>
+                          <strong>🖥️ {nvr.name}</strong>
+                          <span>📍 {nvr.site || 'Unassigned'} ({nvr.ip_address})</span>
                         </div>
-                        <span className={`site-health-text-badge status-${healthStatus}`}>
+                        <span className={`site-health-text-badge status-${nvrStatus}`}>
                           {healthLabel}
                         </span>
                       </div>
                     );
                   })}
+                  {nvrs.length === 0 && (
+                    <div className="empty-nvr-msg">Belum ada NVR terdaftar.</div>
+                  )}
                 </div>
               </div>
 
@@ -917,7 +947,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* MIDDLE ROW: HDD DETAILS (LEFT) & CAMERA CAPACITY RATIO (RIGHT) */}
+            {/* MIDDLE ROW: HDD DETAILS (LEFT) & CAMERA STATUS (RIGHT) */}
             <div className="middle-row-container">
               {/* Left Middle Card: HDD Details (Shipment details in reference) */}
               <div className="middle-card hdd-details-card">
@@ -1050,41 +1080,39 @@ export default function App() {
 
 
 
-              {/* Right Middle Card: Camera Operational Capacity (Current Truck Capacity in reference) */}
+              {/* Right Middle Card: Camera Status (List of Offline & No Recording Cameras) */}
               <div className="middle-card camera-capacity-card">
                 <div className="card-top-header">
-                  <h3>🎥 Camera Online Ratio</h3>
+                  <div>
+                    <h3>🎥 Camera Status</h3>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
+                      Kamera offline atau tidak merekam ({attentionCameras.length})
+                    </p>
+                  </div>
                 </div>
 
-                <div className="capacity-visual-content">
-                  <div className="capacity-big-percentage">
-                    {totalChannels > 0 ? Math.round((onlineCameras / totalChannels) * 100) : 0}%
-                  </div>
-                  <p className="capacity-sublabel">Streaming Cameras Efficiency</p>
-
-                  <div className="capacity-progress-track">
-                    <div
-                      className="capacity-progress-fill"
-                      style={{ width: `${totalChannels > 0 ? (onlineCameras / totalChannels) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="capacity-breakdown-row">
-                    <div className="breakdown-item online" title="Kamera Online &amp; Recording">
-                      <span className="dot">●</span>
-                      <span>Recording ({onlineCameras - notRecordingCameras})</span>
+                <div className="camera-attention-list-wrapper">
+                  {attentionCameras.length === 0 ? (
+                    <div className="all-healthy-box">
+                      <div className="healthy-icon">✅</div>
+                      <strong>Seluruh Kamera Normal</strong>
+                      <p>100% Kamera Streaming Online &amp; Recording Aktif</p>
                     </div>
-                    {notRecordingCameras > 0 && (
-                      <div className="breakdown-item warning" title="Kamera Online tetapi TIDAK Recording">
-                        <span className="dot">●</span>
-                        <span>No Record ({notRecordingCameras})</span>
-                      </div>
-                    )}
-                    <div className="breakdown-item offline" title="Kamera Terputus / Offline">
-                      <span className="dot">●</span>
-                      <span>Offline ({offlineCameras})</span>
+                  ) : (
+                    <div className="camera-attention-scroll-list">
+                      {attentionCameras.map(cam => (
+                        <div key={cam.id} className={`camera-attention-item ${cam.isOnline ? 'no-rec' : 'offline'}`}>
+                          <div className="cam-info">
+                            <strong>{cam.camera_name} <span className="ch-no">(CH-{cam.channel_no})</span></strong>
+                            <span>📍 {cam.nvr_name} ({cam.site})</span>
+                          </div>
+                          <span className={`cam-status-pill ${cam.isOnline ? 'warning' : 'critical'}`}>
+                            {cam.statusLabel}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

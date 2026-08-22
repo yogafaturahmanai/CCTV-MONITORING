@@ -1773,63 +1773,109 @@ h2, h3, h4 {
 
 
 
-.capacity-visual-content {
+/* --- Camera Status Attention List --- */
+.camera-attention-list-wrapper {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.all-healthy-box {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  background: #f0fdf4;
+  border: 1px dashed #86efac;
+  border-radius: 14px;
   text-align: center;
-  padding: 1rem 0;
 }
 
-.capacity-big-percentage {
-  font-size: 3.5rem;
-  font-weight: 900;
-  color: #2563eb;
-  line-height: 1;
-  letter-spacing: -1.5px;
+.healthy-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
 }
 
-.capacity-sublabel {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-top: 0.35rem;
-  margin-bottom: 1.5rem;
+.all-healthy-box strong {
+  font-size: 0.95rem;
+  color: #166534;
 }
 
-.capacity-progress-track {
-  width: 100%;
-  height: 12px;
-  background: #e2e8f0;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
+.all-healthy-box p {
+  font-size: 0.75rem;
+  color: #15803d;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
 }
 
-.capacity-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #2563eb, #3b82f6);
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-.capacity-breakdown-row {
+.camera-attention-scroll-list {
+  max-height: 280px;
+  overflow-y: auto;
   display: flex;
-  justify-content: space-around;
-  width: 100%;
-  font-size: 0.825rem;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-right: 0.25rem;
+}
+
+.camera-attention-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.camera-attention-item.offline {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.camera-attention-item.no-rec {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.cam-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cam-info strong {
+  color: #0f172a;
+  font-size: 0.85rem;
+}
+
+.cam-info .ch-no {
+  color: #64748b;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
-.breakdown-item.online {
-  color: #16a34a;
+.cam-info span {
+  font-size: 0.725rem;
+  color: #64748b;
 }
 
-.breakdown-item.warning {
-  color: #d97706;
+.cam-status-pill {
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
-.breakdown-item.offline {
-  color: #dc2626;
+.cam-status-pill.critical {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.cam-status-pill.warning {
+  background: #d97706;
+  color: #ffffff;
 }
 
 /* --- Bottom Section (NVR Device Cards Grid) --- */
