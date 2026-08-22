@@ -824,50 +824,6 @@ export default function App() {
 
       {/* MAIN CONTENT AREA */}
       <main className="app-main-content">
-        {/* TOP HEADER BAR */}
-        <header className="main-top-header">
-          <div className="top-search-box">
-            <span className="search-lens-icon">🔍</span>
-            <input
-              type="text"
-              className="top-search-input"
-              placeholder="Cari NVR Nama, IP Address, atau Site..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="top-header-filters">
-            <select
-              className="top-select-dropdown"
-              value={selectedSite}
-              onChange={(e) => setSelectedSite(e.target.value)}
-            >
-              {sitesList.map(site => (
-                <option key={site} value={site}>{site}</option>
-              ))}
-            </select>
-
-            <select
-              className="top-select-dropdown"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              <option value="All Types">All Types</option>
-              <option value="hardware_nvr">Hardware NVR</option>
-              <option value="pcnvr">PCNVR (PC-based)</option>
-            </select>
-
-            <button
-              className="top-refresh-btn"
-              onClick={handleManualTriggerSimulation}
-              title="Refresh database status NVR &amp; HDD"
-            >
-              🔄 Refresh DB
-            </button>
-          </div>
-        </header>
-
         {/* DASHBOARD TAB CONTENT */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-content-wrapper">
@@ -890,23 +846,27 @@ export default function App() {
                     const hasOffline = siteNvrs.some(n => getNvrStatus(n) === 'offline');
                     const hasStale = siteNvrs.some(n => getNvrStatus(n) === 'stale');
                     let healthStatus = 'online';
-                    if (hasOffline) healthStatus = 'offline';
-                    else if (hasStale) healthStatus = 'stale';
+                    let healthLabel = 'ONLINE';
+                    if (hasOffline) {
+                      healthStatus = 'offline';
+                      healthLabel = 'OFFLINE';
+                    } else if (hasStale) {
+                      healthStatus = 'stale';
+                      healthLabel = 'AGENT STALE';
+                    }
 
                     return (
                       <div
                         key={siteItem.siteName}
                         className={`topology-site-node health-${healthStatus}`}
-                        onClick={() => setSelectedSite(siteItem.siteName)}
-                        title={`Filter site: ${siteItem.siteName}`}
                       >
-                        <div className="node-indicator">
-                          {healthStatus === 'online' ? '🟢' : healthStatus === 'stale' ? '🟡' : '🔴'}
-                        </div>
                         <div className="node-details">
-                          <strong>{siteItem.siteName}</strong>
+                          <strong>📍 {siteItem.siteName}</strong>
                           <span>{siteItem.nvrsCount} Device NVR</span>
                         </div>
+                        <span className={`site-health-text-badge status-${healthStatus}`}>
+                          {healthLabel}
+                        </span>
                       </div>
                     );
                   })}
@@ -1317,6 +1277,18 @@ export default function App() {
                 {!isEmailActive && <span className="tool-status error">⚠️ Service Email Di-stop</span>}
                 {emailStatus === 'ok' && <span className="tool-status success">✅ SMTP Email Normal!</span>}
                 {emailStatus === 'error' && <span className="tool-status error">❌ Error Koneksi SMTP!</span>}
+              </div>
+
+              <div className="settings-tool-card">
+                <div className="tool-icon">🔄</div>
+                <h3>Refresh Database Cache</h3>
+                <p>Paksa pembaruan data status NVR, HDD, dan Kamera dari SQLite backend</p>
+                <button
+                  className="btn btn-secondary tool-btn"
+                  onClick={handleManualTriggerSimulation}
+                >
+                  🔄 Jalankan Refresh DB
+                </button>
               </div>
 
               <div className="settings-tool-card">
