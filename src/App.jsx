@@ -994,13 +994,6 @@ export default function App() {
                                   <span className="hdd-site-pin">📍</span>
                                   <strong>{site.siteName}</strong>
                                   <span className="hdd-site-meta">{site.nvrsCount} NVR Device</span>
-                                  <span className="hdd-site-summary">
-                                    Total Sisa:&nbsp;
-                                    <strong className={isSiteLow ? 'free-text-warning' : 'free-text-good'}>
-                                      {siteTotalFreeGb} GB
-                                    </strong>
-                                    <span className="hdd-site-cap"> / {siteTotalCapGb} GB</span>
-                                  </span>
                                 </div>
                               </td>
                             </tr>

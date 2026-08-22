@@ -1498,16 +1498,19 @@ h2, h3, h4 {
   color: #047857;
 }
 
-.topology-site-node.health-stale {
+.topology-site-node.health-stale,
+.topology-site-node.health-partial {
   background: #fef3c7;
   border: 2px solid #f59e0b;
 }
 
-.topology-site-node.health-stale .node-details strong {
+.topology-site-node.health-stale .node-details strong,
+.topology-site-node.health-partial .node-details strong {
   color: #78350f;
 }
 
-.topology-site-node.health-stale .node-details span {
+.topology-site-node.health-stale .node-details span,
+.topology-site-node.health-partial .node-details span {
   color: #b45309;
 }
 
@@ -1563,7 +1566,8 @@ h2, h3, h4 {
   border: 1px solid #15803d;
 }
 
-.site-health-text-badge.status-stale {
+.site-health-text-badge.status-stale,
+.site-health-text-badge.status-partial {
   background: #d97706;
   color: #ffffff;
   border: 1px solid #b45309;
@@ -1573,6 +1577,16 @@ h2, h3, h4 {
   background: #dc2626;
   color: #ffffff;
   border: 1px solid #b91c1c;
+}
+
+/* Alerts Summary Card Layout Fix */
+.alerts-summary-card {
+  justify-content: flex-start !important;
+  gap: 1rem;
+}
+
+.alerts-summary-card .card-top-header {
+  margin-bottom: 0.25rem !important;
 }
 
 /* Alerts Stack */
