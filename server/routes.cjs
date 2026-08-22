@@ -458,7 +458,7 @@ router.get('/settings/services', authenticateToken, (req, res) => {
 // POST /api/telegram/toggle — Start / Stop Service Bot Telegram
 router.post('/telegram/toggle', authenticateToken, (req, res) => {
   const current = getTelegramServiceActive();
-  const nextState = req.body.active !== undefined ? Boolean(req.body.active) : !current;
+  const nextState = (req.body && req.body.active !== undefined) ? Boolean(req.body.active) : !current;
   const updated = setTelegramServiceActive(nextState);
   res.json({
     success: true,
@@ -470,7 +470,7 @@ router.post('/telegram/toggle', authenticateToken, (req, res) => {
 // POST /api/email/toggle — Start / Stop Service Alert Email (SMTP)
 router.post('/email/toggle', authenticateToken, (req, res) => {
   const current = getEmailServiceActive();
-  const nextState = req.body.active !== undefined ? Boolean(req.body.active) : !current;
+  const nextState = (req.body && req.body.active !== undefined) ? Boolean(req.body.active) : !current;
   const updated = setEmailServiceActive(nextState);
   res.json({
     success: true,

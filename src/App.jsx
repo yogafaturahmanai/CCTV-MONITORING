@@ -69,10 +69,16 @@ export default function App() {
 
   // Toggle Telegram Service
   const toggleTelegramService = async () => {
+    const nextState = !isTelegramActive;
+    setIsTelegramActive(nextState); // Optimistic UI update for immediate response
     try {
       const response = await fetch('/api/telegram/toggle', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ active: nextState })
       });
       if (response.ok) {
         const data = await response.json();
@@ -85,10 +91,16 @@ export default function App() {
 
   // Toggle Email Service
   const toggleEmailService = async () => {
+    const nextState = !isEmailActive;
+    setIsEmailActive(nextState); // Optimistic UI update for immediate response
     try {
       const response = await fetch('/api/email/toggle', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ active: nextState })
       });
       if (response.ok) {
         const data = await response.json();
