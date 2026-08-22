@@ -496,14 +496,21 @@ export default function App() {
   let totalChannels = 0;
   let onlineCameras = 0;
   let offlineCameras = 0;
+  let notRecordingCameras = 0;
   let errorHdds = 0;
 
   nvrs.forEach(nvr => {
     if (nvr.channels) {
       totalChannels += nvr.channels.length;
       nvr.channels.forEach(ch => {
-        if (ch.last_status === 'ONLINE') onlineCameras++;
-        else offlineCameras++;
+        if (ch.last_status === 'ONLINE') {
+          onlineCameras++;
+          if (ch.last_recording_status !== 'RECORDING') {
+            notRecordingCameras++;
+          }
+        } else {
+          offlineCameras++;
+        }
       });
     }
     if (nvr.hdds) {
@@ -882,6 +889,16 @@ export default function App() {
                     </div>
                   </div>
 
+                  {notRecordingCameras > 0 && (
+                    <div className="alert-row warning">
+                      <div className="alert-icon-box">⚠️</div>
+                      <div className="alert-text">
+                        <strong>{notRecordingCameras} Kamera Aktif Tanpa Record</strong>
+                        <p>Kamera Online namun status recording tidak aktif</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="alert-row critical">
                     <div className="alert-icon-box">🔴</div>
                     <div className="alert-text">
@@ -1054,11 +1071,17 @@ export default function App() {
                   </div>
 
                   <div className="capacity-breakdown-row">
-                    <div className="breakdown-item online">
+                    <div className="breakdown-item online" title="Kamera Online &amp; Recording">
                       <span className="dot">●</span>
-                      <span>Online ({onlineCameras})</span>
+                      <span>Recording ({onlineCameras - notRecordingCameras})</span>
                     </div>
-                    <div className="breakdown-item offline">
+                    {notRecordingCameras > 0 && (
+                      <div className="breakdown-item warning" title="Kamera Online tetapi TIDAK Recording">
+                        <span className="dot">●</span>
+                        <span>No Record ({notRecordingCameras})</span>
+                      </div>
+                    )}
+                    <div className="breakdown-item offline" title="Kamera Terputus / Offline">
                       <span className="dot">●</span>
                       <span>Offline ({offlineCameras})</span>
                     </div>
