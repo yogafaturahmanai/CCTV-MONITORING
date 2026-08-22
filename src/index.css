@@ -1662,7 +1662,75 @@ h2, h3, h4 {
   vertical-align: middle;
 }
 
-/* Camera Capacity Widget Box */
+/* HDD Grouped by Site Styles */
+.hdd-site-group-header {
+  background: #f1f5f9;
+}
+
+.hdd-site-group-header td {
+  padding: 0.6rem 0.85rem !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  border-top: 2px solid #e2e8f0;
+}
+
+.hdd-site-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hdd-site-pin {
+  font-size: 0.95rem;
+}
+
+.hdd-site-group-title strong {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.hdd-site-meta {
+  font-size: 0.72rem;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.hdd-site-summary {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hdd-site-cap {
+  color: #94a3b8;
+}
+
+.hdd-disk-row td {
+  padding-left: 1.5rem !important;
+}
+
+.nvr-name-inline {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #334155;
+  display: block;
+}
+
+.hdd-empty-site-row {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 1rem 1.5rem !important;
+}
+
+
 .capacity-visual-content {
   display: flex;
   flex-direction: column;
