@@ -1475,32 +1475,58 @@ h2, h3, h4 {
 
 .topology-site-node {
   border-radius: 14px;
-  padding: 0.95rem 1rem;
+  padding: 1rem 1.15rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* SOLID HEALTH COLORS FOR CARDS */
 .topology-site-node.health-online {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: #dcfce7;
+  border: 2px solid #22c55e;
+}
+
+.topology-site-node.health-online .node-details strong {
+  color: #065f46;
+}
+
+.topology-site-node.health-online .node-details span {
+  color: #047857;
 }
 
 .topology-site-node.health-stale {
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+}
+
+.topology-site-node.health-stale .node-details strong {
+  color: #78350f;
+}
+
+.topology-site-node.health-stale .node-details span {
+  color: #b45309;
 }
 
 .topology-site-node.health-offline {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: #fee2e2;
+  border: 2px solid #ef4444;
+}
+
+.topology-site-node.health-offline .node-details strong {
+  color: #7f1d1d;
+}
+
+.topology-site-node.health-offline .node-details span {
+  color: #b91c1c;
 }
 
 .topology-site-node:hover {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .node-details {
@@ -1509,42 +1535,44 @@ h2, h3, h4 {
 }
 
 .node-details strong {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .node-details span {
-  font-size: 0.725rem;
-  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
   margin-top: 0.15rem;
 }
 
+/* SOLID STATUS BADGES */
 .site-health-text-badge {
-  font-size: 0.675rem;
-  font-weight: 800;
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  letter-spacing: 0.3px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  letter-spacing: 0.4px;
   white-space: nowrap;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .site-health-text-badge.status-online {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
+  background: #16a34a;
+  color: #ffffff;
+  border: 1px solid #15803d;
 }
 
 .site-health-text-badge.status-stale {
-  background: #fef3c7;
-  color: #b45309;
-  border: 1px solid #fde047;
+  background: #d97706;
+  color: #ffffff;
+  border: 1px solid #b45309;
 }
 
 .site-health-text-badge.status-offline {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #b91c1c;
 }
 
 /* Alerts Stack */
