@@ -26,6 +26,16 @@ const SMTP_PASS = process.env.SMTP_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || SMTP_USER;
 const EMAIL_TO = process.env.EMAIL_TO;
 
+let isEmailServiceActive = true;
+
+const setEmailServiceActive = (active) => {
+  isEmailServiceActive = Boolean(active);
+  console.log(`[Email] Service status diubah menjadi: ${isEmailServiceActive ? 'ACTIVE' : 'STOPPED'}`);
+  return isEmailServiceActive;
+};
+
+const getEmailServiceActive = () => isEmailServiceActive;
+
 if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !EMAIL_TO) {
   console.warn('[Email] SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_TO belum lengkap di .env. Notifikasi Email tidak akan terkirim.');
 }
@@ -41,6 +51,10 @@ const transporter = nodemailer.createTransport({
 // Helper: Kirim Email
 // ─────────────────────────────────────────────
 const sendEmail = async (subject, html, toAddress = EMAIL_TO) => {
+  if (!isEmailServiceActive) {
+    console.warn('[Email] Service sedang di-stop (non-aktif). Email tidak terkirim.');
+    return false;
+  }
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !toAddress) {
     console.warn('[Email] Konfigurasi SMTP/EMAIL_TO belum lengkap.');
     return false;
@@ -252,5 +266,7 @@ const checkDailyEmailReportSchedule = () => {
 module.exports = {
   sendEmailAlert,
   sendEmailDailyReport,
-  checkDailyEmailReportSchedule
+  checkDailyEmailReportSchedule,
+  setEmailServiceActive,
+  getEmailServiceActive
 };

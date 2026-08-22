@@ -15,6 +15,16 @@ const prisma = new PrismaClient();
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID   = process.env.TELEGRAM_CHAT_ID;
 
+let isTelegramServiceActive = true;
+
+const setTelegramServiceActive = (active) => {
+  isTelegramServiceActive = Boolean(active);
+  console.log(`[Telegram] Service status diubah menjadi: ${isTelegramServiceActive ? 'ACTIVE' : 'STOPPED'}`);
+  return isTelegramServiceActive;
+};
+
+const getTelegramServiceActive = () => isTelegramServiceActive;
+
 if (!BOT_TOKEN || !CHAT_ID) {
   console.warn('[Telegram] TELEGRAM_BOT_TOKEN dan/atau TELEGRAM_CHAT_ID belum diset di .env. Notifikasi Telegram tidak akan terkirim.');
 }
@@ -24,6 +34,10 @@ if (!BOT_TOKEN || !CHAT_ID) {
 // ─────────────────────────────────────────────
 const sendTelegramMessage = (text, targetChatId = CHAT_ID) => {
   return new Promise((resolve, reject) => {
+    if (!isTelegramServiceActive) {
+      console.warn('[Telegram] Service sedang di-stop (non-aktif). Pesan tidak terkirim.');
+      return resolve(false);
+    }
     if (!BOT_TOKEN || !targetChatId) {
       console.warn('[Telegram] TELEGRAM_BOT_TOKEN atau targetChatId belum dikonfigurasi.');
       return resolve(false);
@@ -315,7 +329,10 @@ const checkDailyReportSchedule = () => {
 let lastUpdateId = 0;
 
 const runTelegramBotListener = async () => {
-  if (!BOT_TOKEN) return;
+  if (!BOT_TOKEN || !isTelegramServiceActive) {
+    setTimeout(runTelegramBotListener, 5000);
+    return;
+  }
   
   const options = {
     hostname: 'api.telegram.org',
@@ -385,5 +402,7 @@ module.exports = {
   sendTelegramMessage,
   sendAlert,
   sendDailyReport,
-  checkDailyReportSchedule
+  checkDailyReportSchedule,
+  setTelegramServiceActive,
+  getTelegramServiceActive
 };

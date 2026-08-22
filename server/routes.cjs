@@ -431,9 +431,53 @@ router.post('/agent/:nvr_id/status', authenticateAgentToken, async (req, res) =>
 });
 
 // ─────────────────────────────────────────────
-// TELEGRAM ENDPOINTS
+// TELEGRAM & EMAIL SERVICE CONTROL ENDPOINTS
 // ─────────────────────────────────────────────
-const { sendDailyReport, sendTelegramMessage } = require('./telegramNotifier.cjs');
+const {
+  sendDailyReport,
+  sendTelegramMessage,
+  setTelegramServiceActive,
+  getTelegramServiceActive
+} = require('./telegramNotifier.cjs');
+
+const {
+  sendEmailDailyReport,
+  sendEmailAlert,
+  setEmailServiceActive,
+  getEmailServiceActive
+} = require('./emailNotifier.cjs');
+
+// GET /api/settings/services — Ambil status service Telegram & Email
+router.get('/settings/services', authenticateToken, (req, res) => {
+  res.json({
+    telegramActive: getTelegramServiceActive(),
+    emailActive: getEmailServiceActive()
+  });
+});
+
+// POST /api/telegram/toggle — Start / Stop Service Bot Telegram
+router.post('/telegram/toggle', authenticateToken, (req, res) => {
+  const current = getTelegramServiceActive();
+  const nextState = req.body.active !== undefined ? Boolean(req.body.active) : !current;
+  const updated = setTelegramServiceActive(nextState);
+  res.json({
+    success: true,
+    telegramActive: updated,
+    message: updated ? 'Service Telegram Bot diaktifkan' : 'Service Telegram Bot di-stop (non-aktif)'
+  });
+});
+
+// POST /api/email/toggle — Start / Stop Service Alert Email (SMTP)
+router.post('/email/toggle', authenticateToken, (req, res) => {
+  const current = getEmailServiceActive();
+  const nextState = req.body.active !== undefined ? Boolean(req.body.active) : !current;
+  const updated = setEmailServiceActive(nextState);
+  res.json({
+    success: true,
+    emailActive: updated,
+    message: updated ? 'Service Email Alert diaktifkan' : 'Service Email Alert di-stop (non-aktif)'
+  });
+});
 
 // POST /api/telegram/report — Kirim laporan manual (butuh login)
 router.post('/telegram/report', authenticateToken, async (req, res) => {
@@ -442,7 +486,7 @@ router.post('/telegram/report', authenticateToken, async (req, res) => {
     if (success) {
       res.json({ success: true, message: 'Laporan berhasil dikirim ke Telegram.' });
     } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim laporan. Cek konfigurasi Bot Token & Chat ID.' });
+      res.status(500).json({ success: false, message: 'Gagal mengirim laporan (Service di-stop atau Cek konfigurasi).' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -461,17 +505,12 @@ router.post('/telegram/test', authenticateToken, async (req, res) => {
     if (success) {
       res.json({ success: true, message: 'Test message terkirim ke Telegram.' });
     } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim test message. Cek konfigurasi Bot Token & Chat ID.' });
+      res.status(500).json({ success: false, message: 'Gagal mengirim test message (Service di-stop atau Cek konfigurasi).' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
-// ─────────────────────────────────────────────
-// EMAIL ENDPOINTS
-// ─────────────────────────────────────────────
-const { sendEmailDailyReport, sendEmailAlert } = require('./emailNotifier.cjs');
 
 // POST /api/email/report — Kirim laporan manual (butuh login)
 router.post('/email/report', authenticateToken, async (req, res) => {
@@ -480,7 +519,7 @@ router.post('/email/report', authenticateToken, async (req, res) => {
     if (success) {
       res.json({ success: true, message: 'Laporan berhasil dikirim ke Email.' });
     } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim laporan. Cek konfigurasi SMTP & EMAIL_TO.' });
+      res.status(500).json({ success: false, message: 'Gagal mengirim laporan (Service di-stop atau Cek konfigurasi SMTP).' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -497,7 +536,7 @@ router.post('/email/test', authenticateToken, async (req, res) => {
     if (success) {
       res.json({ success: true, message: 'Test email terkirim.' });
     } else {
-      res.status(500).json({ success: false, message: 'Gagal mengirim test email. Cek konfigurasi SMTP & EMAIL_TO.' });
+      res.status(500).json({ success: false, message: 'Gagal mengirim test email (Service di-stop atau Cek konfigurasi SMTP).' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });

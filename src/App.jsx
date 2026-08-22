@@ -34,13 +34,70 @@ export default function App() {
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
   const [tokenModalNvr, setTokenModalNvr] = useState(null);
 
-  // Telegram report state
+  // Telegram report & service state
   const [isTelegramSending, setIsTelegramSending] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState(null);
+  const [isTelegramActive, setIsTelegramActive] = useState(true);
 
-  // Email report state
+  // Email report & service state
   const [isEmailSending, setIsEmailSending] = useState(false);
   const [emailStatus, setEmailStatus] = useState(null);
+  const [isEmailActive, setIsEmailActive] = useState(true);
+
+  // Fetch service statuses
+  const fetchServiceStatuses = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch('/api/settings/services', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsTelegramActive(data.telegramActive);
+        setIsEmailActive(data.emailActive);
+      }
+    } catch (e) {
+      console.error('Error fetching service statuses:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchServiceStatuses();
+    }
+  }, [isAuthenticated, activeTab]);
+
+  // Toggle Telegram Service
+  const toggleTelegramService = async () => {
+    try {
+      const response = await fetch('/api/telegram/toggle', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsTelegramActive(data.telegramActive);
+      }
+    } catch (e) {
+      console.error('Error toggling Telegram service:', e);
+    }
+  };
+
+  // Toggle Email Service
+  const toggleEmailService = async () => {
+    try {
+      const response = await fetch('/api/email/toggle', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsEmailActive(data.emailActive);
+      }
+    } catch (e) {
+      console.error('Error toggling Email service:', e);
+    }
+  };
 
   // Form states
   const [nvrFormName, setNvrFormName] = useState('');
@@ -1033,8 +1090,66 @@ export default function App() {
         {activeTab === 'settings' && (
           <div className="settings-content-wrapper">
             <div className="section-title-bar">
-              <h2>⚙️ System Integration &amp; Notification Settings</h2>
-              <p>Kelola notifikasi alarm otomatis, test Bot Telegram, dan pengujian server SMTP Email</p>
+              <h2>⚙️ System Integration &amp; Service Controls</h2>
+              <p>Kelola status service background, notifikasi alarm otomatis, test Bot Telegram, dan SMTP Email</p>
+            </div>
+
+            {/* SERVICE START / STOP CONTROLS SECTION */}
+            <div className="service-control-banner">
+              <div className="service-control-card">
+                <div className="service-header-row">
+                  <div className="service-info">
+                    <span className="service-icon">🤖</span>
+                    <div>
+                      <h4>Telegram Bot Service</h4>
+                      <span className={`service-status-badge ${isTelegramActive ? 'active' : 'stopped'}`}>
+                        {isTelegramActive ? '🟢 Service Active (Berjalan)' : '🔴 Service Stopped (Non-Aktif)'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className={`btn ${isTelegramActive ? 'btn-danger' : 'btn-primary'} service-toggle-btn`}
+                    onClick={toggleTelegramService}
+                  >
+                    {isTelegramActive ? '🛑 Stop Service Telegram' : '▶️ Start Service Telegram'}
+                  </button>
+                </div>
+                <p className="service-desc">
+                  {isTelegramActive
+                    ? 'Service Telegram bot sedang aktif mendengarkan perintah & pengiriman notifikasi alarm harian.'
+                    : 'Service Telegram bot di-stop. Pengiriman laporan otomatis & command handler Telegram dinonaktifkan.'}
+                </p>
+              </div>
+
+              <div className="service-control-card">
+                <div className="service-header-row">
+                  <div className="service-info">
+                    <span className="service-icon">📧</span>
+                    <div>
+                      <h4>Email Alert Service (SMTP)</h4>
+                      <span className={`service-status-badge ${isEmailActive ? 'active' : 'stopped'}`}>
+                        {isEmailActive ? '🟢 Service Active (Berjalan)' : '🔴 Service Stopped (Non-Aktif)'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className={`btn ${isEmailActive ? 'btn-danger' : 'btn-primary'} service-toggle-btn`}
+                    onClick={toggleEmailService}
+                  >
+                    {isEmailActive ? '🛑 Stop Service Email' : '▶️ Start Service Email'}
+                  </button>
+                </div>
+                <p className="service-desc">
+                  {isEmailActive
+                    ? 'Service email alert SMTP aktif mengirimkan email otomatis ketika ada kamera offline / HDD penuh.'
+                    : 'Service email alert di-stop. Seluruh pengiriman laporan harian HTML & email darurat ditangguhkan.'}
+                </p>
+              </div>
+            </div>
+
+            {/* ACTION TOOLS GRID */}
+            <div className="section-title-bar" style={{ marginTop: '1rem' }}>
+              <h3>🛠️ Manual Test &amp; Trigger Tools</h3>
             </div>
 
             <div className="settings-grid-container">
@@ -1045,10 +1160,11 @@ export default function App() {
                 <button
                   className="btn btn-secondary tool-btn"
                   onClick={testTelegramBot}
-                  disabled={isTelegramSending}
+                  disabled={isTelegramSending || !isTelegramActive}
                 >
                   {isTelegramSending ? '⏳ Mengirim...' : 'Jalankan Test Bot'}
                 </button>
+                {!isTelegramActive && <span className="tool-status error">⚠️ Service Telegram Di-stop</span>}
                 {telegramStatus === 'ok' && <span className="tool-status success">✅ Terhubung ke Telegram!</span>}
                 {telegramStatus === 'error' && <span className="tool-status error">❌ Gagal Terhubung!</span>}
               </div>
@@ -1060,10 +1176,11 @@ export default function App() {
                 <button
                   className="btn btn-primary tool-btn"
                   onClick={sendTelegramReport}
-                  disabled={isTelegramSending}
+                  disabled={isTelegramSending || !isTelegramActive}
                 >
                   {isTelegramSending ? '⏳ Memproses...' : 'Kirim Laporan Telegram'}
                 </button>
+                {!isTelegramActive && <span className="tool-status error">⚠️ Service Telegram Di-stop</span>}
               </div>
 
               <div className="settings-tool-card">
@@ -1073,10 +1190,11 @@ export default function App() {
                 <button
                   className="btn btn-secondary tool-btn"
                   onClick={testEmailSMTP}
-                  disabled={isEmailSending}
+                  disabled={isEmailSending || !isEmailActive}
                 >
                   {isEmailSending ? '⏳ Mengirim...' : 'Jalankan Test SMTP'}
                 </button>
+                {!isEmailActive && <span className="tool-status error">⚠️ Service Email Di-stop</span>}
                 {emailStatus === 'ok' && <span className="tool-status success">✅ SMTP Email Normal!</span>}
                 {emailStatus === 'error' && <span className="tool-status error">❌ Error Koneksi SMTP!</span>}
               </div>
@@ -1088,10 +1206,11 @@ export default function App() {
                 <button
                   className="btn btn-primary tool-btn"
                   onClick={sendEmailReport}
-                  disabled={isEmailSending}
+                  disabled={isEmailSending || !isEmailActive}
                 >
                   {isEmailSending ? '⏳ Memproses...' : 'Kirim Email Laporan'}
                 </button>
+                {!isEmailActive && <span className="tool-status error">⚠️ Service Email Di-stop</span>}
               </div>
             </div>
           </div>
