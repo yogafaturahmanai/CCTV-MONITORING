@@ -661,494 +661,487 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
-      {/* Header */}
-      <header className="glass-header">
-        <div className="logo-section">
-          <span className="logo-icon">📹</span>
-          <div>
-            <h1>ATI CCTV MONITORING</h1>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>SINGLE PANE OF GLASS</span>
+    <div className="dashboard-app-shell">
+      {/* LEFT SIDEBAR NAVIGATION */}
+      <aside className="app-sidebar">
+        <div className="sidebar-brand">
+          <img src={atiLogo} alt="ATI Logo" className="sidebar-logo-img" />
+          <div className="brand-text">
+            <span className="brand-title">ATI MONITORING</span>
+            <span className="brand-sub">IT Operations Platform</span>
           </div>
         </div>
 
-        <div className="header-actions">
+        <nav className="sidebar-nav">
           <button
-            className={`btn ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`}
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            Dashboard
+            <span className="nav-icon">📊</span>
+            <span className="nav-label">Dashboard</span>
           </button>
+
           <button
-            className={`btn ${activeTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
+            className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit')}
           >
-            Audit Logs
+            <span className="nav-icon">📋</span>
+            <span className="nav-label">Audit Logs</span>
           </button>
-          <div style={{ width: '1px', height: '24px', background: 'var(--border-glass)' }}></div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Halo, <strong>Admin</strong></span>
-          <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+
+          <button
+            className="nav-item"
+            onClick={openAddNvrModal}
+          >
+            <span className="nav-icon">➕</span>
+            <span className="nav-label">Register new NVR</span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <span className="nav-icon">⚙️</span>
+            <span className="nav-label">Settings</span>
+          </button>
+        </nav>
+
+        {/* Sidebar User Profile Footer */}
+        <div className="sidebar-user-footer">
+          <div className="user-avatar-badge">AD</div>
+          <div className="user-info-text">
+            <span className="user-name">Admin User</span>
+            <span className="user-role">IT Operations Admin</span>
+          </div>
+          <button className="sidebar-logout-btn" onClick={handleLogout} title="Logout">
+            🚪
+          </button>
         </div>
-      </header>
+      </aside>
 
-      {/* Simulation Banner */}
-      <div className="simulation-banner">
-        <div>
-          <span style={{ marginRight: '0.5rem' }}>⚡</span>
-          <strong>Polled Backend Connected (SQLite DB)</strong> - Status NVR diperbarui secara periodik.
-        </div>
-        <button className="btn btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }} onClick={handleManualTriggerSimulation}>
-          Refresh DB Cache 🔄
-        </button>
-      </div>
-
-      {activeTab === 'dashboard' ? (
-        <>
-          {/* Counters strip */}
-          <div className="metrics-strip">
-            <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'rgba(79,172,254,0.15)', color: 'var(--accent-blue)' }}>🖥️</div>
-              <div className="metric-info">
-                <h4>Total NVR</h4>
-                <p>{totalNvrs}</p>
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'rgba(37,99,235,0.12)', color: 'var(--accent-cyan)' }}>🎥</div>
-              <div className="metric-info">
-                <h4>Total Channels</h4>
-                <p>{totalChannels}</p>
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'var(--accent-green-glow)', color: 'var(--accent-green)' }}>🟢</div>
-              <div className="metric-info">
-                <h4>Kamera Online</h4>
-                <p>{onlineCameras}</p>
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'var(--accent-rose-glow)', color: 'var(--accent-rose)' }}>🔴</div>
-              <div className="metric-info">
-                <h4>Kamera Offline</h4>
-                <p>{offlineCameras}</p>
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-icon" style={{ background: 'var(--accent-amber-glow)', color: 'var(--accent-amber)' }}>💾</div>
-              <div className="metric-info">
-                <h4>HDD Alert</h4>
-                <p>{errorHdds}</p>
-              </div>
-            </div>
+      {/* MAIN CONTENT AREA */}
+      <main className="app-main-content">
+        {/* TOP HEADER BAR */}
+        <header className="main-top-header">
+          <div className="top-search-box">
+            <span className="search-lens-icon">🔍</span>
+            <input
+              type="text"
+              className="top-search-input"
+              placeholder="Cari NVR Nama, IP Address, atau Site..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
-          {/* SITE STORAGE OVERVIEW (Free Space HDD Per Site) */}
-          <div className="site-overview-section">
-            <div className="section-header-title">
-              <div>
-                <h2>💾 Ringkasan Storage HDD Per Site (Free Space Overview)</h2>
-                <p>Status sisa kapasitas penyimpanan di setiap lokasi secara real-time</p>
+          <div className="top-header-filters">
+            <select
+              className="top-select-dropdown"
+              value={selectedSite}
+              onChange={(e) => setSelectedSite(e.target.value)}
+            >
+              {sitesList.map(site => (
+                <option key={site} value={site}>{site}</option>
+              ))}
+            </select>
+
+            <select
+              className="top-select-dropdown"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="All Types">All Types</option>
+              <option value="hardware_nvr">Hardware NVR</option>
+              <option value="pcnvr">PCNVR (PC-based)</option>
+            </select>
+
+            <button
+              className="top-refresh-btn"
+              onClick={handleManualTriggerSimulation}
+              title="Refresh database status NVR &amp; HDD"
+            >
+              🔄 Refresh DB
+            </button>
+          </div>
+        </header>
+
+        {/* DASHBOARD TAB CONTENT */}
+        {activeTab === 'dashboard' && (
+          <div className="dashboard-content-wrapper">
+            
+            {/* HERO PANEL: SITE TOPOLOGY STATUS MAP HUB & ALERTS (Reference Top Area) */}
+            <div className="hero-hub-container">
+              {/* Left Hero Card: Site Topology Map Hub */}
+              <div className="hero-hub-card map-topology-card">
+                <div className="card-top-header">
+                  <div>
+                    <h3>🗺️ Site Network Topology &amp; Status Hub</h3>
+                    <p>Status NVR &amp; konektivitas server real-time di seluruh site ATI</p>
+                  </div>
+                  <span className="live-status-pill">● LIVE MONITORING</span>
+                </div>
+
+                <div className="site-topology-nodes-grid">
+                  {siteStorageOverview.map(siteItem => {
+                    const siteNvrs = nvrs.filter(n => (n.site || 'Unassigned Site') === siteItem.siteName);
+                    const hasOffline = siteNvrs.some(n => getNvrStatus(n) === 'offline');
+                    const hasStale = siteNvrs.some(n => getNvrStatus(n) === 'stale');
+                    let healthStatus = 'online';
+                    if (hasOffline) healthStatus = 'offline';
+                    else if (hasStale) healthStatus = 'stale';
+
+                    return (
+                      <div
+                        key={siteItem.siteName}
+                        className={`topology-site-node health-${healthStatus}`}
+                        onClick={() => setSelectedSite(siteItem.siteName)}
+                        title={`Filter site: ${siteItem.siteName}`}
+                      >
+                        <div className="node-indicator">
+                          {healthStatus === 'online' ? '🟢' : healthStatus === 'stale' ? '🟡' : '🔴'}
+                        </div>
+                        <div className="node-details">
+                          <strong>{siteItem.siteName}</strong>
+                          <span>{siteItem.nvrsCount} Device NVR</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            <div className="site-storage-grid">
-              {siteStorageOverview.map(siteItem => {
-                const totalFreeGb = (siteItem.totalFreeMb / 1024).toFixed(1);
-                const totalCapGb = (siteItem.totalCapacityMb / 1024).toFixed(1);
-                const isTb = siteItem.totalCapacityMb > 1000000;
-                const displayFree = isTb ? (siteItem.totalFreeMb / 1024 / 1024).toFixed(2) + ' TB' : totalFreeGb + ' GB';
-                const displayCap = isTb ? (siteItem.totalCapacityMb / 1024 / 1024).toFixed(2) + ' TB' : totalCapGb + ' GB';
+              {/* Right Hero Card: Alerts & Notifications */}
+              <div className="hero-hub-card alerts-summary-card">
+                <div className="card-top-header">
+                  <h3>🔔 Alerts &amp; System Health</h3>
+                </div>
 
-                return (
-                  <div key={siteItem.siteName} className="site-storage-card">
-                    <div className="site-card-header">
-                      <div>
-                        <h3>📍 {siteItem.siteName}</h3>
-                        <span className="site-nvr-count">{siteItem.nvrsCount} NVR Device</span>
-                      </div>
-                      <div className="site-free-badge">
-                        <span className="badge-label">Sisa Space:</span>
-                        <strong className="badge-value">{displayFree}</strong>
-                        <span className="badge-total">/ {displayCap}</span>
-                      </div>
-                    </div>
-
-                    <div className="site-hdd-table-wrapper">
-                      <table className="site-hdd-table">
-                        <thead>
-                          <tr>
-                            <th>NVR Device</th>
-                            <th>Disk ID</th>
-                            <th>Kapasitas</th>
-                            <th>Terpakai</th>
-                            <th>Sisa Free Space</th>
-                            <th>Status HDD</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {siteItem.hdds.map((hdd, idx) => {
-                            const usedMb = (hdd.capacity_mb || 0) - (hdd.freespace_mb || 0);
-                            const usagePct = hdd.capacity_mb > 0 ? Math.round((usedMb / hdd.capacity_mb) * 100) : 0;
-                            const freeGb = ((hdd.freespace_mb || 0) / 1024).toFixed(1);
-                            const capGb = ((hdd.capacity_mb || 0) / 1024).toFixed(1);
-                            const usedGb = (usedMb / 1024).toFixed(1);
-
-                            let hddSeverity = 'online';
-                            if (hdd.status === 'error') hddSeverity = 'offline';
-                            else if (usagePct > 90) hddSeverity = 'warning';
-
-                            return (
-                              <tr key={`${hdd.nvrId}-${hdd.disk_id}-${idx}`}>
-                                <td>
-                                  <strong>{hdd.nvrName}</strong>
-                                  <span className="nvr-ip-sub">({hdd.nvrIp})</span>
-                                </td>
-                                <td><code className="disk-code">Disk {hdd.disk_id}</code></td>
-                                <td>{capGb} GB</td>
-                                <td>
-                                  <div className="usage-bar-cell">
-                                    <span>{usedGb} GB ({usagePct}%)</span>
-                                    <div className="mini-progress-track">
-                                      <div
-                                        className={`mini-progress-fill ${hddSeverity}`}
-                                        style={{ width: `${usagePct}%` }}
-                                      ></div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td>
-                                  <strong className={usagePct > 90 ? 'free-text-warning' : 'free-text-good'}>
-                                    {freeGb} GB
-                                  </strong>
-                                </td>
-                                <td>
-                                  <span className={`indicator-dot ${hddSeverity}`}></span>
-                                  <span className="hdd-status-text">{hdd.status || 'Normal'}</span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          {siteItem.hdds.length === 0 && (
-                            <tr>
-                              <td colSpan="6" className="empty-hdd-row">
-                                Belum ada data harddisk terdeteksi di lokasi ini.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                <div className="alerts-stack">
+                  <div className="alert-row warning">
+                    <div className="alert-icon-box">💾</div>
+                    <div className="alert-text">
+                      <strong>{errorHdds} Disk Need Attention</strong>
+                      <p>Kapasitas &gt;90% atau terdeteksi error</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          {/* Filtering Control Bar & NVR Grid Header */}
-          <div className="section-header-title" style={{ padding: '1rem 2rem 0 2rem' }}>
-            <div>
-              <h2>📹 Daftar NVR &amp; PC IVMS Server</h2>
-              <p>Klik button Detail View pada device untuk melihat status kamera channel &amp; aksi kelola</p>
-            </div>
-          </div>
-
-          {/* Filtering Control Bar */}
-          <div className="controls-container">
-            <div className="filters-wrapper">
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Cari NVR Nama / IP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '220px' }}
-              />
-              <select
-                className="select-input"
-                value={selectedSite}
-                onChange={(e) => setSelectedSite(e.target.value)}
-              >
-                {sitesList.map(site => (
-                  <option key={site} value={site}>{site}</option>
-                ))}
-              </select>
-              <select
-                className="select-input"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-              >
-                <option value="All Types">All Types</option>
-                <option value="hardware_nvr">Hardware NVR</option>
-                <option value="pcnvr">PCNVR (PC-based)</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {telegramStatus === 'ok' && (
-                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
-              )}
-              {telegramStatus === 'error' && (
-                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
-              )}
-              <button
-                className="btn"
-                onClick={testTelegramBot}
-                disabled={isTelegramSending}
-                title="Test koneksi bot Telegram"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(37,99,235,0.3)',
-                  color: 'var(--accent-cyan)',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '6px',
-                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
-                  opacity: isTelegramSending ? 0.6 : 1
-                }}
-              >
-                {isTelegramSending ? '⏳' : '🤖'} Test Bot
-              </button>
-              <button
-                className="btn"
-                onClick={sendTelegramReport}
-                disabled={isTelegramSending}
-                title="Kirim laporan status semua NVR ke Telegram sekarang"
-                style={{
-                  background: 'linear-gradient(135deg, #0284c7, #2563eb)',
-                  border: 'none',
-                  color: '#fff',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: '6px',
-                  cursor: isTelegramSending ? 'not-allowed' : 'pointer',
-                  opacity: isTelegramSending ? 0.6 : 1,
-                  fontWeight: 600
-                }}
-              >
-                {isTelegramSending ? '⏳ Mengirim...' : '📨 Kirim Laporan'}
-              </button>
-              {emailStatus === 'ok' && (
-                <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', fontWeight: 600 }}>✅ Terkirim!</span>
-              )}
-              {emailStatus === 'error' && (
-                <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', fontWeight: 600 }}>❌ Gagal!</span>
-              )}
-              <button
-                className="btn"
-                onClick={testEmailSMTP}
-                disabled={isEmailSending}
-                title="Test koneksi email SMTP"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(37,99,235,0.3)',
-                  color: 'var(--accent-cyan)',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '6px',
-                  cursor: isEmailSending ? 'not-allowed' : 'pointer',
-                  opacity: isEmailSending ? 0.6 : 1
-                }}
-              >
-                {isEmailSending ? '⏳' : '📧'} Test SMTP
-              </button>
-              <button
-                className="btn"
-                onClick={sendEmailReport}
-                disabled={isEmailSending}
-                title="Kirim laporan status semua NVR ke Email sekarang"
-                style={{
-                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                  border: 'none',
-                  color: '#fff',
-                  fontSize: '0.8rem',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: '6px',
-                  cursor: isEmailSending ? 'not-allowed' : 'pointer',
-                  opacity: isEmailSending ? 0.6 : 1,
-                  fontWeight: 600
-                }}
-              >
-                {isEmailSending ? '⏳ Mengirim...' : '📨 Kirim Email'}
-              </button>
-              <button className="btn btn-primary" onClick={openAddNvrModal}>
-                <span>+</span> Register New NVR
-              </button>
-            </div>
-          </div>
-
-          {/* Grid View */}
-          <div className="nvr-grid">
-            {filteredNvrs.map(nvr => {
-              const status = getNvrStatus(nvr);
-              const nvrHdds = nvr.hdds || [];
-              const nvrChannels = nvr.channels || [];
-              const offlineCount = nvrChannels.filter(c => c.last_status !== 'ONLINE').length;
-
-              // Calculate overall HDD Usage percentage
-              const totalCapacity = nvrHdds.reduce((acc, h) => acc + h.capacity_mb, 0);
-              const totalFree = nvrHdds.reduce((acc, h) => acc + h.freespace_mb, 0);
-              const totalUsed = totalCapacity - totalFree;
-              const usagePercent = totalCapacity > 0 ? Math.round((totalUsed / totalCapacity) * 100) : 0;
-
-              // Progress bar styling
-              let diskSeverity = 'normal';
-              if (nvrHdds.some(h => h.status === 'error')) {
-                diskSeverity = 'error';
-              } else if (usagePercent > 90) {
-                diskSeverity = 'warning';
-              }
-
-              return (
-                <div key={nvr.id} className={`nvr-card status-${status}`}>
-                  <div className="nvr-card-header">
-                    <div className="nvr-title-group">
-                      <h3>{nvr.name}</h3>
-                      <span className="site-badge">{nvr.site}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.5rem', textTransform: 'uppercase' }}>
-                        {nvr.type === 'pcnvr' ? 'PCNVR' : 'Hardware'}
-                      </span>
+                  <div className="alert-row critical">
+                    <div className="alert-icon-box">🔴</div>
+                    <div className="alert-text">
+                      <strong>{offlineCameras} Kamera Offline</strong>
+                      <p>Dari total {totalChannels} channel terdaftar</p>
                     </div>
-                    <span className={`status-badge ${status}`}>
-                      {status === 'stale' ? 'AGENT STALE' : status}
-                    </span>
                   </div>
 
-                  <div className="nvr-card-body">
-                    <div className="nvr-meta-row">
-                      <span>IP Address</span>
-                      <strong style={{ color: 'var(--text-primary)' }}>{nvr.ip_address}:{nvr.port}</strong>
+                  <div className="alert-row success">
+                    <div className="alert-icon-box">🟢</div>
+                    <div className="alert-text">
+                      <strong>{onlineCameras} Kamera Streaming Online</strong>
+                      <p>Terhubung di {totalNvrs} NVR device</p>
                     </div>
-
-                    <div className="nvr-meta-row">
-                      <span>Protocol</span>
-                      <span style={{ textTransform: 'uppercase' }}>{nvr.protocol}</span>
-                    </div>
-
-                    {nvr.type === 'pcnvr' && nvr.last_heartbeat_at && (
-                      <div className="nvr-meta-row" style={{ fontStyle: 'italic', fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>
-                        Heartbeat: {new Date(nvr.last_heartbeat_at).toLocaleTimeString()}
-                      </div>
-                    )}
-
-                    {nvrHdds.length > 0 && (
-                      <div className="storage-section" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.75rem' }}>
-                        {nvrHdds.map(hdd => {
-                          const hddUsedMb = hdd.capacity_mb - hdd.freespace_mb;
-                          const hddUsagePct = Math.round((hddUsedMb / hdd.capacity_mb) * 100);
-                          let hddSeverity = 'normal';
-                          if (hdd.status === 'error') {
-                            hddSeverity = 'error';
-                          } else if (hddUsagePct > 95) {
-                            hddSeverity = 'warning';
-                          }
-
-                          return (
-                            <div key={hdd.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                              <div className="storage-header" style={{ fontSize: '0.75rem', marginBottom: '2px' }}>
-                                <span>Disk {hdd.disk_id} ({hddUsagePct}%)</span>
-                                <span>{(hddUsedMb / 1024).toFixed(1)} / {(hdd.capacity_mb / 1024).toFixed(1)} GB</span>
-                              </div>
-                              <div className="progress-track" style={{ height: '6px' }}>
-                                <div
-                                  className={`progress-fill ${hddSeverity}`}
-                                  style={{ width: `${hddUsagePct}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="nvr-card-footer">
-                    <span className="camera-summary-count">
-                      Kamera: <strong>{nvrChannels.length - offlineCount} / {nvrChannels.length}</strong> Online
-                    </span>
-                    {offlineCount > 0 && (
-                      <span className="offline-badge">
-                        {offlineCount} Problematic
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                    <button
-                      className="btn btn-secondary"
-                      style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.75rem' }}
-                      onClick={() => {
-                        setSelectedNvrId(nvr.id);
-                        setIsDetailModalOpen(true);
-                        setDetailTab('cameras');
-                      }}
-                    >
-                      🔍 Detail View
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => openEditNvrModal(nvr)}
-                    >
-                      ✏️ Edit
-                    </button>
                   </div>
                 </div>
-              );
-            })}
-
-            {filteredNvrs.length === 0 && (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-                <h3>NVR Tidak Ditemukan</h3>
-                <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Silakan periksa filter atau ketik pencarian yang berbeda.</p>
               </div>
-            )}
-          </div>
-        </>
-      ) : (
-        /* Audit Logs View */
-        <div className="audit-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2>Audit Logs Aktivitas</h2>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Retention: 90 Hari (Auto-Purge Aktif)</span>
-          </div>
+            </div>
 
-          <div className="audit-table-card">
-            <div className="details-table-wrapper">
-              <table className="details-table">
-                <thead>
-                  <tr>
-                    <th>Waktu (WIB)</th>
-                    <th>User</th>
-                    <th>Aksi</th>
-                    <th>Detail Aktivitas</th>
-                    <th>Severity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLogs.map(log => (
-                    <tr key={log.id}>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        {new Date(log.timestamp).toLocaleString('id-ID')}
-                      </td>
-                      <td><strong>{log.username}</strong></td>
-                      <td style={{ color: 'var(--accent-cyan)' }}>{log.action}</td>
-                      <td>{log.details}</td>
-                      <td>
-                        <span className={`log-severity ${log.severity}`}>
-                          {log.severity}
+            {/* MIDDLE ROW: HDD DETAILS (LEFT) & CAMERA CAPACITY RATIO (RIGHT) */}
+            <div className="middle-row-container">
+              {/* Left Middle Card: HDD Details (Shipment details in reference) */}
+              <div className="middle-card hdd-details-card">
+                <div className="card-top-header">
+                  <div>
+                    <h3>💾 HDD Details (Free Space Per Disk)</h3>
+                    <p>Daftar rincian harddisk, terpakai, dan sisa kapasitas free space per site</p>
+                  </div>
+                </div>
+
+                <div className="hdd-table-responsive-wrapper">
+                  <table className="modern-hdd-table">
+                    <thead>
+                      <tr>
+                        <th>Location Site</th>
+                        <th>NVR Device</th>
+                        <th>Disk ID</th>
+                        <th>Kapasitas</th>
+                        <th>Terpakai</th>
+                        <th>Sisa Free Space</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {siteStorageOverview.flatMap(site =>
+                        site.hdds.map((hdd, idx) => {
+                          const usedMb = (hdd.capacity_mb || 0) - (hdd.freespace_mb || 0);
+                          const usagePct = hdd.capacity_mb > 0 ? Math.round((usedMb / hdd.capacity_mb) * 100) : 0;
+                          const freeGb = ((hdd.freespace_mb || 0) / 1024).toFixed(1);
+                          const capGb = ((hdd.capacity_mb || 0) / 1024).toFixed(1);
+                          const usedGb = (usedMb / 1024).toFixed(1);
+
+                          let hddSeverity = 'online';
+                          if (hdd.status === 'error') hddSeverity = 'offline';
+                          else if (usagePct > 90) hddSeverity = 'warning';
+
+                          return (
+                            <tr key={`${site.siteName}-${hdd.nvrId}-${hdd.disk_id}-${idx}`}>
+                              <td><strong>📍 {site.siteName}</strong></td>
+                              <td>
+                                {hdd.nvrName}
+                                <span className="nvr-ip-sub">({hdd.nvrIp})</span>
+                              </td>
+                              <td><code className="disk-code">Disk {hdd.disk_id}</code></td>
+                              <td>{capGb} GB</td>
+                              <td>
+                                <div className="usage-bar-cell">
+                                  <span>{usedGb} GB ({usagePct}%)</span>
+                                  <div className="mini-progress-track">
+                                    <div
+                                      className={`mini-progress-fill ${hddSeverity}`}
+                                      style={{ width: `${usagePct}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <strong className={usagePct > 90 ? 'free-text-warning' : 'free-text-good'}>
+                                  {freeGb} GB
+                                </strong>
+                              </td>
+                              <td>
+                                <span className={`indicator-dot ${hddSeverity}`}></span>
+                                <span className="hdd-status-text">{hdd.status || 'Normal'}</span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Right Middle Card: Camera Operational Capacity (Current Truck Capacity in reference) */}
+              <div className="middle-card camera-capacity-card">
+                <div className="card-top-header">
+                  <h3>🎥 Camera Online Ratio</h3>
+                </div>
+
+                <div className="capacity-visual-content">
+                  <div className="capacity-big-percentage">
+                    {totalChannels > 0 ? Math.round((onlineCameras / totalChannels) * 100) : 0}%
+                  </div>
+                  <p className="capacity-sublabel">Streaming Cameras Efficiency</p>
+
+                  <div className="capacity-progress-track">
+                    <div
+                      className="capacity-progress-fill"
+                      style={{ width: `${totalChannels > 0 ? (onlineCameras / totalChannels) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="capacity-breakdown-row">
+                    <div className="breakdown-item online">
+                      <span className="dot">●</span>
+                      <span>Online ({onlineCameras})</span>
+                    </div>
+                    <div className="breakdown-item offline">
+                      <span className="dot">●</span>
+                      <span>Offline ({offlineCameras})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* BOTTOM SECTION: ALL SITE & NVR CARDS GRID */}
+            <div className="bottom-nvr-section">
+              <div className="section-title-bar">
+                <h2>📹 Devices &amp; NVR Server List</h2>
+                <p>Klik button Detail View pada card device untuk melihat seluruh data NVR/PC IVMS di site tersebut</p>
+              </div>
+
+              <div className="nvr-cards-grid">
+                {filteredNvrs.map(nvr => {
+                  const status = getNvrStatus(nvr);
+                  const nvrHdds = nvr.hdds || [];
+                  const nvrChannels = nvr.channels || [];
+                  const offlineCount = nvrChannels.filter(c => c.last_status !== 'ONLINE').length;
+
+                  return (
+                    <div key={nvr.id} className={`nvr-device-card status-${status}`}>
+                      <div className="device-card-header">
+                        <div>
+                          <h3 className="device-name">{nvr.name}</h3>
+                          <span className="device-site-tag">{nvr.site}</span>
+                        </div>
+                        <span className={`status-badge ${status}`}>
+                          {status === 'stale' ? 'AGENT STALE' : status}
                         </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+
+                      <div className="device-card-body">
+                        <div className="meta-info-row">
+                          <span className="meta-label">IP Address</span>
+                          <strong className="meta-val">{nvr.ip_address}:{nvr.port}</strong>
+                        </div>
+
+                        <div className="meta-info-row">
+                          <span className="meta-label">Kamera</span>
+                          <strong className="meta-val">{nvrChannels.length - offlineCount} / {nvrChannels.length} Online</strong>
+                        </div>
+
+                        <div className="meta-info-row">
+                          <span className="meta-label">Tipe Server</span>
+                          <span className="meta-type">{nvr.type === 'pcnvr' ? 'PCNVR (PC-based)' : 'Hardware NVR'}</span>
+                        </div>
+                      </div>
+
+                      <div className="device-card-actions">
+                        <button
+                          className="btn btn-primary detail-btn"
+                          onClick={() => {
+                            setSelectedNvrId(nvr.id);
+                            setIsDetailModalOpen(true);
+                            setDetailTab('cameras');
+                          }}
+                        >
+                          🔍 Detail View
+                        </button>
+                        <button
+                          className="btn btn-secondary edit-btn"
+                          onClick={() => openEditNvrModal(nvr)}
+                        >
+                          ✏️ Edit
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredNvrs.length === 0 && (
+                  <div className="empty-grid-msg">
+                    <h3>NVR Tidak Ditemukan</h3>
+                    <p>Silakan sesuaikan filter pencarian atau buat registrasi NVR baru.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* SETTINGS TAB CONTENT */}
+        {activeTab === 'settings' && (
+          <div className="settings-content-wrapper">
+            <div className="section-title-bar">
+              <h2>⚙️ System Integration &amp; Notification Settings</h2>
+              <p>Kelola notifikasi alarm otomatis, test Bot Telegram, dan pengujian server SMTP Email</p>
+            </div>
+
+            <div className="settings-grid-container">
+              <div className="settings-tool-card">
+                <div className="tool-icon">🤖</div>
+                <h3>Test Bot Telegram</h3>
+                <p>Kirim notifikasi ping verifikasi ke Bot Telegram CCTV Monitoring</p>
+                <button
+                  className="btn btn-secondary tool-btn"
+                  onClick={testTelegramBot}
+                  disabled={isTelegramSending}
+                >
+                  {isTelegramSending ? '⏳ Mengirim...' : 'Jalankan Test Bot'}
+                </button>
+                {telegramStatus === 'ok' && <span className="tool-status success">✅ Terhubung ke Telegram!</span>}
+                {telegramStatus === 'error' && <span className="tool-status error">❌ Gagal Terhubung!</span>}
+              </div>
+
+              <div className="settings-tool-card">
+                <div className="tool-icon">📨</div>
+                <h3>Kirim Laporan Telegram</h3>
+                <p>Trigger pengiriman ringkasan status NVR &amp; HDD ke Telegram sekarang</p>
+                <button
+                  className="btn btn-primary tool-btn"
+                  onClick={sendTelegramReport}
+                  disabled={isTelegramSending}
+                >
+                  {isTelegramSending ? '⏳ Memproses...' : 'Kirim Laporan Telegram'}
+                </button>
+              </div>
+
+              <div className="settings-tool-card">
+                <div className="tool-icon">📧</div>
+                <h3>Test SMTP Email</h3>
+                <p>Uji koneksi autentikasi server email notifikasi alarm</p>
+                <button
+                  className="btn btn-secondary tool-btn"
+                  onClick={testEmailSMTP}
+                  disabled={isEmailSending}
+                >
+                  {isEmailSending ? '⏳ Mengirim...' : 'Jalankan Test SMTP'}
+                </button>
+                {emailStatus === 'ok' && <span className="tool-status success">✅ SMTP Email Normal!</span>}
+                {emailStatus === 'error' && <span className="tool-status error">❌ Error Koneksi SMTP!</span>}
+              </div>
+
+              <div className="settings-tool-card">
+                <div className="tool-icon">📩</div>
+                <h3>Kirim Email Laporan</h3>
+                <p>Kirim laporan HTML lengkap ke daftar penerima email yang dikonfigurasi</p>
+                <button
+                  className="btn btn-primary tool-btn"
+                  onClick={sendEmailReport}
+                  disabled={isEmailSending}
+                >
+                  {isEmailSending ? '⏳ Memproses...' : 'Kirim Email Laporan'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* modal detail */}
+        {/* AUDIT LOGS TAB CONTENT */}
+        {activeTab === 'audit' && (
+          <div className="audit-content-wrapper">
+            <div className="section-title-bar">
+              <h2>📋 Audit Logs Aktivitas System</h2>
+              <p>Riwayat aktivitas sistem &amp; perubahan konfigurasi (Retention: 90 Hari)</p>
+            </div>
+
+            <div className="audit-table-card">
+              <div className="details-table-wrapper">
+                <table className="details-table">
+                  <thead>
+                    <tr>
+                      <th>Waktu (WIB)</th>
+                      <th>User</th>
+                      <th>Aksi</th>
+                      <th>Detail Aktivitas</th>
+                      <th>Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map(log => (
+                      <tr key={log.id}>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          {new Date(log.timestamp).toLocaleString('id-ID')}
+                        </td>
+                        <td><strong>{log.username}</strong></td>
+                        <td style={{ color: '#2563eb' }}>{log.action}</td>
+                        <td>{log.details}</td>
+                        <td>
+                          <span className={`log-severity ${log.severity}`}>
+                            {log.severity}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* MODAL DETAIL DEVICE */}
       {isDetailModalOpen && selectedNvr && (
         <div className="modal-overlay">
           <div className="modal-container">
