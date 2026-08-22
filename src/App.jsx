@@ -456,6 +456,39 @@ export default function App() {
     }
   });
 
+  // Group NVRs and HDDs by Site for the top Site Storage Overview section
+  const siteStorageOverview = React.useMemo(() => {
+    const siteMap = {};
+    nvrs.forEach(nvr => {
+      const siteName = nvr.site || 'Unassigned Site';
+      if (!siteMap[siteName]) {
+        siteMap[siteName] = {
+          siteName,
+          nvrsCount: 0,
+          totalCapacityMb: 0,
+          totalFreeMb: 0,
+          hdds: []
+        };
+      }
+      siteMap[siteName].nvrsCount += 1;
+
+      (nvr.hdds || []).forEach(hdd => {
+        const capacity = hdd.capacity_mb || 0;
+        const free = hdd.freespace_mb || 0;
+        siteMap[siteName].totalCapacityMb += capacity;
+        siteMap[siteName].totalFreeMb += free;
+        siteMap[siteName].hdds.push({
+          ...hdd,
+          nvrName: nvr.name,
+          nvrIp: nvr.ip_address,
+          nvrType: nvr.type,
+          nvrId: nvr.id
+        });
+      });
+    });
+    return Object.values(siteMap);
+  }, [nvrs]);
+
   // Unique sites for filtering
   const sitesList = ['All Sites', ...new Set(nvrs.map(n => n.site))];
 
@@ -707,6 +740,116 @@ export default function App() {
                 <h4>HDD Alert</h4>
                 <p>{errorHdds}</p>
               </div>
+            </div>
+          </div>
+
+          {/* SITE STORAGE OVERVIEW (Free Space HDD Per Site) */}
+          <div className="site-overview-section">
+            <div className="section-header-title">
+              <div>
+                <h2>💾 Ringkasan Storage HDD Per Site (Free Space Overview)</h2>
+                <p>Status sisa kapasitas penyimpanan di setiap lokasi secara real-time</p>
+              </div>
+            </div>
+
+            <div className="site-storage-grid">
+              {siteStorageOverview.map(siteItem => {
+                const totalFreeGb = (siteItem.totalFreeMb / 1024).toFixed(1);
+                const totalCapGb = (siteItem.totalCapacityMb / 1024).toFixed(1);
+                const isTb = siteItem.totalCapacityMb > 1000000;
+                const displayFree = isTb ? (siteItem.totalFreeMb / 1024 / 1024).toFixed(2) + ' TB' : totalFreeGb + ' GB';
+                const displayCap = isTb ? (siteItem.totalCapacityMb / 1024 / 1024).toFixed(2) + ' TB' : totalCapGb + ' GB';
+
+                return (
+                  <div key={siteItem.siteName} className="site-storage-card">
+                    <div className="site-card-header">
+                      <div>
+                        <h3>📍 {siteItem.siteName}</h3>
+                        <span className="site-nvr-count">{siteItem.nvrsCount} NVR Device</span>
+                      </div>
+                      <div className="site-free-badge">
+                        <span className="badge-label">Sisa Space:</span>
+                        <strong className="badge-value">{displayFree}</strong>
+                        <span className="badge-total">/ {displayCap}</span>
+                      </div>
+                    </div>
+
+                    <div className="site-hdd-table-wrapper">
+                      <table className="site-hdd-table">
+                        <thead>
+                          <tr>
+                            <th>NVR Device</th>
+                            <th>Disk ID</th>
+                            <th>Kapasitas</th>
+                            <th>Terpakai</th>
+                            <th>Sisa Free Space</th>
+                            <th>Status HDD</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {siteItem.hdds.map((hdd, idx) => {
+                            const usedMb = (hdd.capacity_mb || 0) - (hdd.freespace_mb || 0);
+                            const usagePct = hdd.capacity_mb > 0 ? Math.round((usedMb / hdd.capacity_mb) * 100) : 0;
+                            const freeGb = ((hdd.freespace_mb || 0) / 1024).toFixed(1);
+                            const capGb = ((hdd.capacity_mb || 0) / 1024).toFixed(1);
+                            const usedGb = (usedMb / 1024).toFixed(1);
+
+                            let hddSeverity = 'online';
+                            if (hdd.status === 'error') hddSeverity = 'offline';
+                            else if (usagePct > 90) hddSeverity = 'warning';
+
+                            return (
+                              <tr key={`${hdd.nvrId}-${hdd.disk_id}-${idx}`}>
+                                <td>
+                                  <strong>{hdd.nvrName}</strong>
+                                  <span className="nvr-ip-sub">({hdd.nvrIp})</span>
+                                </td>
+                                <td><code className="disk-code">Disk {hdd.disk_id}</code></td>
+                                <td>{capGb} GB</td>
+                                <td>
+                                  <div className="usage-bar-cell">
+                                    <span>{usedGb} GB ({usagePct}%)</span>
+                                    <div className="mini-progress-track">
+                                      <div
+                                        className={`mini-progress-fill ${hddSeverity}`}
+                                        style={{ width: `${usagePct}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <strong className={usagePct > 90 ? 'free-text-warning' : 'free-text-good'}>
+                                    {freeGb} GB
+                                  </strong>
+                                </td>
+                                <td>
+                                  <span className={`indicator-dot ${hddSeverity}`}></span>
+                                  <span className="hdd-status-text">{hdd.status || 'Normal'}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {siteItem.hdds.length === 0 && (
+                            <tr>
+                              <td colSpan="6" className="empty-hdd-row">
+                                Belum ada data harddisk terdeteksi di lokasi ini.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Filtering Control Bar & NVR Grid Header */}
+          <div className="section-header-title" style={{ padding: '1rem 2rem 0 2rem' }}>
+            <div>
+              <h2>📹 Daftar NVR &amp; PC IVMS Server</h2>
+              <p>Klik button Detail View pada device untuk melihat status kamera channel &amp; aksi kelola</p>
             </div>
           </div>
 
