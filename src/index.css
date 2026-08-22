@@ -1231,11 +1231,11 @@ h2, h3, h4 {
   color: #1e293b;
 }
 
-/* --- Left Sidebar --- */
+/* --- Left Sidebar (Blue Theme) --- */
 .app-sidebar {
-  width: 260px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  width: 270px;
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1244,21 +1244,34 @@ h2, h3, h4 {
   top: 0;
   height: 100vh;
   z-index: 50;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
+  color: #ffffff;
 }
 
 .sidebar-brand {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.sidebar-logo-img {
-  height: 36px;
-  width: auto;
+.sidebar-cctv-icon-badge {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-cctv-img {
+  height: 28px;
+  width: 28px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .brand-text {
@@ -1269,15 +1282,19 @@ h2, h3, h4 {
 .brand-title {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.3px;
-  line-height: 1.2;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
+  margin: 0;
 }
 
 .brand-sub {
   font-size: 0.675rem;
-  color: #64748b;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 400;
+  line-height: 1.4;
+  margin-top: 0.35rem;
+  margin-bottom: 0;
 }
 
 .sidebar-nav {
@@ -1296,7 +1313,7 @@ h2, h3, h4 {
   border-radius: 12px;
   border: none;
   background: transparent;
-  color: #475569;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -1305,18 +1322,22 @@ h2, h3, h4 {
 }
 
 .nav-item:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 .nav-item.active {
-  background: #2563eb;
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
 .nav-icon {
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
 }
 
 .sidebar-user-footer {
@@ -1324,13 +1345,14 @@ h2, h3, h4 {
   align-items: center;
   gap: 0.75rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .user-avatar-badge {
   width: 38px;
   height: 38px;
-  background: linear-gradient(135deg, #2563eb, #6366f1);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -1338,7 +1360,6 @@ h2, h3, h4 {
   justify-content: center;
   font-weight: 700;
   font-size: 0.85rem;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .user-info-text {
@@ -1351,7 +1372,7 @@ h2, h3, h4 {
 .user-name {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #ffffff;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -1359,15 +1380,15 @@ h2, h3, h4 {
 
 .user-role {
   font-size: 0.7rem;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .sidebar-logout-btn {
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-  color: #dc2626;
-  width: 32px;
-  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
@@ -1379,6 +1400,7 @@ h2, h3, h4 {
 .sidebar-logout-btn:hover {
   background: #dc2626;
   color: #ffffff;
+  border-color: #dc2626;
 }
 
 /* --- Main Content --- */
